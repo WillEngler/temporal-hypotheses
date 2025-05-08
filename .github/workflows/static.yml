@@ -28,6 +28,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: temporal-hypotheses
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,6 +40,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: temporal-hypotheses/package.json
       
       - name: Install dependencies
         run: npm install
@@ -51,7 +55,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload only the built files
-          path: './dist'
+          path: './temporal-hypotheses/dist'
       
       - name: Deploy to GitHub Pages
         id: deployment
