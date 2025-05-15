@@ -21,7 +21,6 @@ interface SummaryStats {
 }
 
 const KPISummary: React.FC = () => {
-  const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<SummaryStats | null>(null);
@@ -37,8 +36,6 @@ const KPISummary: React.FC = () => {
         if (error) {
           throw error;
         }
-        
-        setPapers(data || []);
         
         // Calculate stats if data is available
         if (data && data.length > 0) {
