@@ -80,13 +80,18 @@ const SuperconductorAnalysis: React.FC = () => {
   useEffect(() => {
     const processData = () => {
       const processedData = (superconductorData as any[]).map(item => {
-        // Extract oxygen percentage from JSON string in material_composition
+        // Extract oxygen percentage by atoms
         let oxygenPercentage: number | undefined = undefined;
         if (item.material_composition) {
           try {
             const comp = JSON.parse(item.material_composition);
             if (comp && typeof comp === 'object' && comp['O']) {
-              oxygenPercentage = parseFloat(comp['O']);
+              // Calculate oxygen percentage by atoms
+              let totalAtoms = 0;
+              for (const element in comp) {
+                totalAtoms += parseFloat(comp[element]);
+              }
+              oxygenPercentage = (parseFloat(comp['O']) / totalAtoms) * 100;
             }
           } catch (e) {
             // Ignore parse errors
