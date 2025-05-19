@@ -1,4 +1,3 @@
-import React from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import LK99Chart from './components/LK99Chart';
 import KPISummary from './components/KPISummary';
