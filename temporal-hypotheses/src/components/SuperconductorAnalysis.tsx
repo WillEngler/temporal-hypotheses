@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Cell
 } from 'recharts';
 import superconductorData from './SuperconductorData';
