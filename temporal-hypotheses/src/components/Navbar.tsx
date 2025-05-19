@@ -30,6 +30,14 @@ const Navbar: React.FC = () => {
             >
               KPI Summaries
             </NavLink>
+            <NavLink 
+              to="/superconductor-analysis" 
+              className={({ isActive }) => 
+                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
+              }
+            >
+              Superconductor Analysis
+            </NavLink>
           </div>
         </div>
       </div>

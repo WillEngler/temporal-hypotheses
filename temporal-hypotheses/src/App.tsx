@@ -1,6 +1,8 @@
+import React from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import LK99Chart from './components/LK99Chart';
 import KPISummary from './components/KPISummary';
+import SuperconductorAnalysis from './components/SuperconductorAnalysis';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -24,18 +26,19 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<LK99Chart />} />
           <Route path="/kpi-summaries" element={<KPISummary />} />
+          <Route path="/superconductor-analysis" element={<SuperconductorAnalysis />} />
         </Routes>
       </main>
     </div>
   );
 };
 
-function App() {
+const App = () => {
   return (
     <HashRouter>
       <AppContent />
     </HashRouter>
   );
-}
+};
 
 export default App;
