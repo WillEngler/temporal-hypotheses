@@ -91,7 +91,7 @@ const SuperconductorAnalysis: React.FC = () => {
               for (const element in comp) {
                 totalAtoms += parseFloat(comp[element]);
               }
-              oxygenPercentage = (parseFloat(comp['O']) / totalAtoms) * 100;
+              oxygenPercentage = parseFloat(((parseFloat(comp['O']) / totalAtoms) * 100).toFixed(1));
             }
           } catch (e) {
             // Ignore parse errors
@@ -166,7 +166,7 @@ const SuperconductorAnalysis: React.FC = () => {
                   const data = payload[0].payload;
                   return (
                     <div className="custom-tooltip">
-                      <p>{`Oxygen Percentage: ${data.oxygen_percentage}`}</p>
+                      <p>{`Oxygen Percentage: ${data.oxygen_percentage?.toFixed(1)}%`}</p>
                       <p>{`Critical Temperature: ${data.properties_critical_temperature.toFixed(1)} K`}</p>
                       <p className="paper-info">{`Year: ${extractYear(data.published_date)}`}</p>
                       <p className="paper-title">{`Title: ${data.title?.substring(0, 60)}${data.title?.length > 60 ? '...' : ''}`}</p>
