@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../services/supabase';
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  ZAxis
+} from 'recharts';
 import './MultipleHypotheses.css';
 
 interface Hypothesis {
@@ -20,6 +31,20 @@ interface HypothesisScore {
   argument_credibility_score: number | null;
   created_at: string;
   published_date: string;
+}
+
+// Prepare data for visualization
+interface TimelineDataPoint {
+  date: number; // timestamp for X-axis
+  score: number; // combined score for Y-axis
+  title: string; // paper title for tooltip
+  journal: string; // journal for tooltip
+  verdict: 'support' | 'reject' | 'neutral'; // for color
+  reason: string | null; // for tooltip
+  dateStr: string; // formatted date for tooltip
+  paperScore: number | null; // for tooltip
+  argumentScore: number | null; // for tooltip
+  fill?: string; // color for the dot
 }
 
 // Mock data for hypotheses
@@ -326,6 +351,7 @@ const MultipleHypotheses: React.FC = () => {
   const [hypotheses, setHypotheses] = useState<Hypothesis[]>([]);
   const [selectedHypothesisId, setSelectedHypothesisId] = useState<number | null>(null);
   const [scores, setScores] = useState<HypothesisScore[]>([]);
+  const [timelineData, setTimelineData] = useState<TimelineDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingScores, setLoadingScores] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -392,6 +418,50 @@ const MultipleHypotheses: React.FC = () => {
         });
         
         setScores(sortedScores);
+
+        // Process data for timeline visualization
+        const processedData = hypothesisScores.map(score => {
+          let combinedScore = 0;
+          
+          // Calculate combined score (paper_credibility * argument_credibility)
+          if (score.paper_credibility_score && score.argument_credibility_score) {
+            combinedScore = score.paper_credibility_score * score.argument_credibility_score;
+            
+            // Negative scores for rejection
+            if (score.verdict === 'reject') {
+              combinedScore = -combinedScore;
+            }
+            
+            // Neutral scores are always zero
+            if (score.verdict === 'neutral') {
+              combinedScore = 0;
+            }
+          }
+          
+          // Convert date string to timestamp for X-axis
+          const date = new Date(score.published_date).getTime();
+          
+          // Get color based on verdict
+          const color = getVerdictColor(score.verdict);
+          
+          return {
+            date,
+            score: combinedScore,
+            title: score.paper_title,
+            journal: score.journal,
+            verdict: score.verdict,
+            reason: score.reason,
+            dateStr: formatDate(score.published_date),
+            paperScore: score.paper_credibility_score,
+            argumentScore: score.argument_credibility_score,
+            fill: color // Add fill property with color
+          };
+        });
+        
+        // Sort timeline data by date (oldest to newest)
+        const sortedTimelineData = processedData.sort((a, b) => a.date - b.date);
+        setTimelineData(sortedTimelineData);
+        
         setLoadingScores(false);
       }, 700);
     }
@@ -415,6 +485,50 @@ const MultipleHypotheses: React.FC = () => {
         }
         
         setScores(data || []);
+
+        // Process data for timeline visualization
+        const processedData = (data || []).map(score => {
+          let combinedScore = 0;
+          
+          // Calculate combined score (paper_credibility * argument_credibility)
+          if (score.paper_credibility_score && score.argument_credibility_score) {
+            combinedScore = score.paper_credibility_score * score.argument_credibility_score;
+            
+            // Negative scores for rejection
+            if (score.verdict === 'reject') {
+              combinedScore = -combinedScore;
+            }
+            
+            // Neutral scores are always zero
+            if (score.verdict === 'neutral') {
+              combinedScore = 0;
+            }
+          }
+          
+          // Convert date string to timestamp for X-axis
+          const date = new Date(score.published_date).getTime();
+          
+          // Get color based on verdict
+          const color = getVerdictColor(score.verdict);
+          
+          return {
+            date,
+            score: combinedScore,
+            title: score.paper_title,
+            journal: score.journal,
+            verdict: score.verdict,
+            reason: score.reason,
+            dateStr: formatDate(score.published_date),
+            paperScore: score.paper_credibility_score,
+            argumentScore: score.argument_credibility_score,
+            fill: color // Add fill property with color
+          };
+        });
+        
+        // Sort timeline data by date (oldest to newest)
+        const sortedTimelineData = processedData.sort((a, b) => a.date - b.date);
+        setTimelineData(sortedTimelineData);
+        
       } catch (err) {
         setScoresError(err instanceof Error ? err.message : 'Failed to fetch hypothesis scores');
         console.error('Error fetching hypothesis scores:', err);
@@ -435,6 +549,42 @@ const MultipleHypotheses: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  // Get color for scatter plot dots based on verdict
+  const getVerdictColor = (verdict: 'support' | 'reject' | 'neutral'): string => {
+    switch (verdict) {
+      case 'support':
+        return '#4caf50'; // green
+      case 'reject':
+        return '#f44336'; // red
+      case 'neutral':
+        return '#2196f3'; // blue
+      default:
+        return '#9e9e9e'; // grey
+    }
+  };
+
+  // Custom tooltip component for the scatter plot
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="timeline-tooltip">
+          <p className="tooltip-title">{data.title}</p>
+          <p className="tooltip-journal">{data.journal} ({data.dateStr})</p>
+          <p className="tooltip-scores">
+            Paper credibility: {(data.paperScore ?? 0).toFixed(2)}<br />
+            Argument credibility: {(data.argumentScore ?? 0).toFixed(2)}
+          </p>
+          <p className="tooltip-verdict">
+            <span className={`verdict verdict-${data.verdict}`}>{data.verdict}</span>
+          </p>
+          {data.reason && <p className="tooltip-reason">{data.reason}</p>}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -477,33 +627,83 @@ const MultipleHypotheses: React.FC = () => {
             ) : scoresError ? (
               <div className="error-message">Error loading scores: {scoresError}</div>
             ) : scores.length > 0 ? (
-              <div className="scores-summary">
-                <p>Found {scores.length} paper analysis scores for this hypothesis</p>
-                <div className="scores-table-container">
-                  <table className="scores-table">
-                    <thead>
-                      <tr>
-                        <th>Paper Title</th>
-                        <th>Journal</th>
-                        <th>Published</th>
-                        <th>Verdict</th>
-                        <th>Credibility</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {scores.map(score => (
-                        <tr key={score.id}>
-                          <td>{score.paper_title}</td>
-                          <td>{score.journal}</td>
-                          <td>{formatDate(score.published_date)}</td>
-                          <td className={`verdict verdict-${score.verdict}`}>{score.verdict}</td>
-                          <td>{score.paper_credibility_score?.toFixed(2) || 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <>
+                <div className="timeline-container">
+                  <h4>Hypothesis Confirmation Timeline</h4>
+                  <div className="timeline-legend">
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#4caf50' }}></span>
+                      <span>Support</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#f44336' }}></span>
+                      <span>Reject</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#2196f3' }}></span>
+                      <span>Neutral</span>
+                    </div>
+                  </div>
+                  <div className="timeline-chart">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <ScatterChart
+                        margin={{ top: 20, right: 20, bottom: 20, left: 80 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="date"
+                          name="Date"
+                          domain={['dataMin', 'dataMax']}
+                          tickFormatter={(unixTime) => new Date(unixTime).toLocaleDateString('en-US', { year: 'numeric' })}
+                          type="number"
+                          label={{ value: 'Publication Date', position: 'bottom', offset: 0 }}
+                        />
+                        <YAxis
+                          dataKey="score"
+                          name="Score"
+                          domain={[-1, 1]}
+                          label={{ value: 'Confirmation Strength', angle: -90, position: 'center', dx: -40 }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <ReferenceLine y={0} stroke="#666" />
+                        <ZAxis range={[60, 60]} />
+                        <Scatter
+                          data={timelineData}
+                        />
+                      </ScatterChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              </div>
+
+                <div className="scores-summary">
+                  <h4>Paper Analysis Scores</h4>
+                  <p>Found {scores.length} paper analysis scores for this hypothesis</p>
+                  <div className="scores-table-container">
+                    <table className="scores-table">
+                      <thead>
+                        <tr>
+                          <th>Paper Title</th>
+                          <th>Journal</th>
+                          <th>Published</th>
+                          <th>Verdict</th>
+                          <th>Credibility</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {scores.map(score => (
+                          <tr key={score.id}>
+                            <td>{score.paper_title}</td>
+                            <td>{score.journal}</td>
+                            <td>{formatDate(score.published_date)}</td>
+                            <td className={`verdict verdict-${score.verdict}`}>{score.verdict}</td>
+                            <td>{score.paper_credibility_score?.toFixed(2) || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
             ) : (
               <p>No scores available for this hypothesis.</p>
             )}

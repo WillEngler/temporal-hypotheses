@@ -55,8 +55,85 @@
   margin-bottom: 16px;
 }
 
+.timeline-container {
+  margin-bottom: 30px;
+}
+
+.timeline-container h4 {
+  margin-bottom: 10px;
+}
+
+.timeline-legend {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.timeline-legend .legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.timeline-legend .legend-color {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.timeline-chart {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 20px;
+}
+
+.timeline-tooltip {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.timeline-tooltip .tooltip-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.timeline-tooltip .tooltip-journal {
+  font-style: italic;
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.timeline-tooltip .tooltip-scores {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.timeline-tooltip .tooltip-verdict {
+  margin-bottom: 5px;
+}
+
+.timeline-tooltip .tooltip-reason {
+  font-size: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 5px;
+  margin-top: 5px;
+}
+
 .scores-summary {
   margin-top: 20px;
+}
+
+.scores-summary h4 {
+  margin-bottom: 10px;
 }
 
 .scores-table-container {
