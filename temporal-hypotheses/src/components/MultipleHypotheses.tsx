@@ -19,6 +19,7 @@ interface HypothesisScore {
   reason: string | null;
   argument_credibility_score: number | null;
   created_at: string;
+  published_date: string;
 }
 
 // Mock data for hypotheses
@@ -33,11 +34,302 @@ const MOCK_HYPOTHESES: Hypothesis[] = [
   }
 ];
 
+// Mock data for hypothesis scores
+const MOCK_SCORES: {[key: number]: HypothesisScore[]} = {
+  1: [
+    {
+      id: 101,
+      paper_doi: "10.1038/s41586-021-03622-z",
+      paper_title: "Superconductivity in cuprate heterostructures",
+      model: "claude-3",
+      journal: "Nature",
+      paper_credibility_score: 0.85,
+      hypothesis_id: 1,
+      verdict: "support",
+      reason: "Demonstrates high-temperature superconductivity in engineered cuprate structures with transition at 95K.",
+      argument_credibility_score: 0.92,
+      created_at: "2023-10-15T14:32:10Z",
+      published_date: "2021-05-12T00:00:00Z"
+    },
+    {
+      id: 102,
+      paper_doi: "10.1126/science.abc4245",
+      paper_title: "Room-temperature superconductivity in hydrogen-rich materials",
+      model: "claude-3",
+      journal: "Science",
+      paper_credibility_score: 0.78,
+      hypothesis_id: 1,
+      verdict: "reject",
+      reason: "Shows evidence that hydrides are more likely to achieve room-temperature superconductivity before cuprates.",
+      argument_credibility_score: 0.81,
+      created_at: "2023-11-03T09:15:22Z",
+      published_date: "2020-10-14T00:00:00Z"
+    },
+    {
+      id: 103,
+      paper_doi: "10.1103/PhysRevLett.127.117002",
+      paper_title: "Electronic Structure of High-Tc Cuprate Superconductors",
+      model: "gpt-4",
+      journal: "Physical Review Letters",
+      paper_credibility_score: 0.91,
+      hypothesis_id: 1,
+      verdict: "support",
+      reason: "Detailed analysis of electronic structure suggests cuprates have optimal properties for room-temperature superconductivity.",
+      argument_credibility_score: 0.88,
+      created_at: "2023-09-21T11:42:56Z",
+      published_date: "2021-09-07T00:00:00Z"
+    },
+    {
+      id: 104,
+      paper_doi: "10.1038/s41563-022-01358-3",
+      paper_title: "Advances in iron-based superconductors",
+      model: "claude-3",
+      journal: "Nature Materials",
+      paper_credibility_score: 0.82,
+      hypothesis_id: 1,
+      verdict: "neutral",
+      reason: "Compares cuprates and iron-based superconductors, finding both have paths toward higher temperature superconductivity.",
+      argument_credibility_score: 0.75,
+      created_at: "2023-12-07T16:28:33Z",
+      published_date: "2022-08-23T00:00:00Z"
+    },
+    {
+      id: 105,
+      paper_doi: "10.1073/pnas.2201112119",
+      paper_title: "Theoretical limits of superconducting critical temperatures",
+      model: "gpt-4",
+      journal: "PNAS",
+      paper_credibility_score: 0.76,
+      hypothesis_id: 1,
+      verdict: "support",
+      reason: "Theoretical models place cuprates as the most promising class of materials for achieving room-temperature superconductivity.",
+      argument_credibility_score: 0.79,
+      created_at: "2024-01-12T08:45:19Z",
+      published_date: "2022-05-17T00:00:00Z"
+    },
+    {
+      id: 106,
+      paper_doi: "10.1038/s41566-023-01245-6",
+      paper_title: "Optical signatures of high-temperature superconductivity",
+      model: "claude-3",
+      journal: "Nature Photonics",
+      paper_credibility_score: 0.88,
+      hypothesis_id: 1,
+      verdict: "support",
+      reason: "Optical measurements of cuprates reveal properties consistent with potential room-temperature superconductivity.",
+      argument_credibility_score: 0.84,
+      created_at: "2024-02-03T13:20:41Z",
+      published_date: "2023-06-29T00:00:00Z"
+    },
+    {
+      id: 107,
+      paper_doi: "10.1126/sciadv.abl9222",
+      paper_title: "Critical analysis of reported room-temperature superconductors",
+      model: "gpt-4",
+      journal: "Science Advances",
+      paper_credibility_score: 0.94,
+      hypothesis_id: 1,
+      verdict: "reject",
+      reason: "Analysis suggests carbonaceous sulfur hydrides are more likely candidates than cuprates for the first room-temperature superconductor.",
+      argument_credibility_score: 0.93,
+      created_at: "2024-01-27T10:05:38Z",
+      published_date: "2023-02-15T00:00:00Z"
+    },
+    {
+      id: 108,
+      paper_doi: "10.1103/PhysRevX.13.021001",
+      paper_title: "Pressure-induced high-Tc superconductivity in La-based cuprates",
+      model: "claude-3",
+      journal: "Physical Review X",
+      paper_credibility_score: 0.83,
+      hypothesis_id: 1,
+      verdict: "support",
+      reason: "Demonstrates pressure can increase cuprate Tc to near-room-temperature values, supporting potential for cuprate room-temperature superconductivity.",
+      argument_credibility_score: 0.86,
+      created_at: "2023-08-14T15:52:29Z",
+      published_date: "2023-01-10T00:00:00Z"
+    },
+    {
+      id: 109,
+      paper_doi: "10.1021/jacs.2c13243",
+      paper_title: "Chemical approaches to superconducting materials",
+      model: "gpt-4",
+      journal: "Journal of the American Chemical Society",
+      paper_credibility_score: 0.79,
+      hypothesis_id: 1,
+      verdict: "neutral",
+      reason: "Review suggests multiple material classes have potential for room-temperature superconductivity.",
+      argument_credibility_score: 0.80,
+      created_at: "2023-11-29T09:37:14Z",
+      published_date: "2022-12-05T00:00:00Z"
+    },
+    {
+      id: 110,
+      paper_doi: "10.1038/s41567-023-02092-6",
+      paper_title: "Theoretical foundations of cuprate superconductivity",
+      model: "claude-3",
+      journal: "Nature Physics",
+      paper_credibility_score: 0.89,
+      hypothesis_id: 1,
+      verdict: "support",
+      reason: "Comprehensive theoretical analysis suggests cuprates remain the most promising path to room-temperature superconductivity.",
+      argument_credibility_score: 0.90,
+      created_at: "2024-03-05T11:18:47Z",
+      published_date: "2023-11-21T00:00:00Z"
+    },
+  ],
+  2: [
+    {
+      id: 201,
+      paper_doi: "10.1038/s41567-022-01867-7",
+      paper_title: "Observation of Majorana fermions in superconducting systems",
+      model: "gpt-4",
+      journal: "Nature Physics",
+      paper_credibility_score: 0.87,
+      hypothesis_id: 2,
+      verdict: "support",
+      reason: "Direct observation of Majorana fermions in modified superconductors with high transition temperatures.",
+      argument_credibility_score: 0.84,
+      created_at: "2023-08-22T16:45:30Z",
+      published_date: "2022-07-18T00:00:00Z"
+    },
+    {
+      id: 202,
+      paper_doi: "10.1126/science.abf1077",
+      paper_title: "Majorana zero modes in superconductor-semiconductor heterostructures",
+      model: "claude-3",
+      journal: "Science",
+      paper_credibility_score: 0.92,
+      hypothesis_id: 2,
+      verdict: "support",
+      reason: "Experimental evidence shows Majorana fermions contribute to enhanced superconducting properties.",
+      argument_credibility_score: 0.89,
+      created_at: "2023-10-11T13:22:18Z",
+      published_date: "2021-03-05T00:00:00Z"
+    },
+    {
+      id: 203,
+      paper_doi: "10.1103/PhysRevLett.128.237001",
+      paper_title: "Theory of Majorana-mediated superconductivity",
+      model: "gpt-4",
+      journal: "Physical Review Letters",
+      paper_credibility_score: 0.93,
+      hypothesis_id: 2,
+      verdict: "support",
+      reason: "Theoretical framework shows how Majorana fermions could facilitate high-temperature superconducting pairing.",
+      argument_credibility_score: 0.91,
+      created_at: "2023-09-05T08:17:42Z",
+      published_date: "2022-06-15T00:00:00Z"
+    },
+    {
+      id: 204,
+      paper_doi: "10.1038/s41586-023-05987-9",
+      paper_title: "Limitations of Majorana fermions in conventional superconductors",
+      model: "claude-3",
+      journal: "Nature",
+      paper_credibility_score: 0.85,
+      hypothesis_id: 2,
+      verdict: "reject",
+      reason: "Analysis shows Majorana fermions may not be essential for room-temperature superconductivity.",
+      argument_credibility_score: 0.82,
+      created_at: "2024-01-08T11:35:09Z",
+      published_date: "2023-04-12T00:00:00Z"
+    },
+    {
+      id: 205,
+      paper_doi: "10.1073/pnas.2301542120",
+      paper_title: "Emergent phenomena in topological superconductors",
+      model: "gpt-4",
+      journal: "PNAS",
+      paper_credibility_score: 0.78,
+      hypothesis_id: 2,
+      verdict: "neutral",
+      reason: "Discusses multiple mechanisms for high-temperature superconductivity, with Majorana fermions being just one possibility.",
+      argument_credibility_score: 0.75,
+      created_at: "2023-12-19T14:28:33Z",
+      published_date: "2023-06-30T00:00:00Z"
+    },
+    {
+      id: 206,
+      paper_doi: "10.1038/s41563-023-01644-8",
+      paper_title: "Electronic structure of Majorana-hosting superconductors",
+      model: "claude-3",
+      journal: "Nature Materials",
+      paper_credibility_score: 0.89,
+      hypothesis_id: 2,
+      verdict: "support",
+      reason: "Materials with Majorana fermions show enhanced superconducting transition temperatures approaching room temperature.",
+      argument_credibility_score: 0.87,
+      created_at: "2024-02-27T09:42:51Z",
+      published_date: "2023-09-22T00:00:00Z"
+    },
+    {
+      id: 207,
+      paper_doi: "10.1126/sciadv.ade9142",
+      paper_title: "Role of topology in unconventional superconductivity",
+      model: "gpt-4",
+      journal: "Science Advances",
+      paper_credibility_score: 0.81,
+      hypothesis_id: 2,
+      verdict: "neutral",
+      reason: "Suggests Majorana fermions may contribute to, but are not necessary for, room-temperature superconductivity.",
+      argument_credibility_score: 0.83,
+      created_at: "2023-11-14T15:55:27Z",
+      published_date: "2023-05-19T00:00:00Z"
+    },
+    {
+      id: 208,
+      paper_doi: "10.1103/PhysRevB.107.174501",
+      paper_title: "Majorana fermions in high-Tc superconductor candidates",
+      model: "claude-3",
+      journal: "Physical Review B",
+      paper_credibility_score: 0.76,
+      hypothesis_id: 2,
+      verdict: "support",
+      reason: "Experimental detection of Majorana modes in materials with high transition temperatures suggests a causal relationship.",
+      argument_credibility_score: 0.78,
+      created_at: "2023-07-30T12:19:36Z",
+      published_date: "2021-11-08T00:00:00Z"
+    },
+    {
+      id: 209,
+      paper_doi: "10.1021/acs.nanolett.3c02145",
+      paper_title: "Engineering Majorana states in 2D materials",
+      model: "gpt-4",
+      journal: "Nano Letters",
+      paper_credibility_score: 0.83,
+      hypothesis_id: 2,
+      verdict: "support",
+      reason: "Demonstrates engineered materials with Majorana fermions showing superconductivity above 200K.",
+      argument_credibility_score: 0.85,
+      created_at: "2024-01-19T10:28:43Z",
+      published_date: "2023-08-14T00:00:00Z"
+    },
+    {
+      id: 210,
+      paper_doi: "10.1038/s41567-023-02098-0",
+      paper_title: "Critical assessment of Majorana detection claims",
+      model: "claude-3",
+      journal: "Nature Physics",
+      paper_credibility_score: 0.95,
+      hypothesis_id: 2,
+      verdict: "reject",
+      reason: "Rigorous analysis finds insufficient evidence linking Majorana fermions to high-temperature superconductivity mechanisms.",
+      argument_credibility_score: 0.94,
+      created_at: "2024-03-12T08:35:16Z",
+      published_date: "2023-12-05T00:00:00Z"
+    },
+  ]
+};
+
 const MultipleHypotheses: React.FC = () => {
   const [hypotheses, setHypotheses] = useState<Hypothesis[]>([]);
   const [selectedHypothesisId, setSelectedHypothesisId] = useState<number | null>(null);
+  const [scores, setScores] = useState<HypothesisScore[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingScores, setLoadingScores] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scoresError, setScoresError] = useState<string | null>(null);
 
   useEffect(() => {
     // Using mock data instead of fetching from Supabase
@@ -82,8 +374,67 @@ const MultipleHypotheses: React.FC = () => {
     */
   }, []);
 
+  // Fetch scores when selected hypothesis changes
+  useEffect(() => {
+    if (!selectedHypothesisId) return;
+
+    // Using mock data instead of fetching from Supabase
+    function loadMockScores() {
+      setLoadingScores(true);
+      // Simulate loading delay
+      setTimeout(() => {
+        // Using type assertion to avoid TypeScript error with null as index
+        const hypothesisScores = selectedHypothesisId ? MOCK_SCORES[selectedHypothesisId] || [] : [];
+        
+        // Sort the scores by published_date, newest first
+        const sortedScores = [...hypothesisScores].sort((a, b) => {
+          return new Date(b.published_date).getTime() - new Date(a.published_date).getTime();
+        });
+        
+        setScores(sortedScores);
+        setLoadingScores(false);
+      }, 700);
+    }
+
+    loadMockScores();
+
+    /* Commented out Supabase fetch - will be used when table is created
+    async function fetchHypothesisScores() {
+      try {
+        setLoadingScores(true);
+        setScoresError(null);
+        
+        const { data, error } = await supabase
+          .from('hypothesis_scores')
+          .select('*')
+          .eq('hypothesis_id', selectedHypothesisId)
+          .order('published_date', { ascending: false });
+          
+        if (error) {
+          throw error;
+        }
+        
+        setScores(data || []);
+      } catch (err) {
+        setScoresError(err instanceof Error ? err.message : 'Failed to fetch hypothesis scores');
+        console.error('Error fetching hypothesis scores:', err);
+      } finally {
+        setLoadingScores(false);
+      }
+    }
+    
+    fetchHypothesisScores();
+    */
+  }, [selectedHypothesisId]);
+
   const handleHypothesisChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedHypothesisId(Number(event.target.value));
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   return (
@@ -118,10 +469,44 @@ const MultipleHypotheses: React.FC = () => {
         {loading ? (
           <p>Loading hypotheses data...</p>
         ) : selectedHypothesisId ? (
-          <div>
-            <h3>Visualization for Selected Hypothesis</h3>
-            <p>Graphs for hypothesis ID: {selectedHypothesisId} will be displayed here.</p>
-            <p>We will fetch scores from the hypothesis_scores table for this hypothesis.</p>
+          <div className="hypothesis-analysis">
+            <h3>Analysis for: {hypotheses.find(h => h.id === selectedHypothesisId)?.text}</h3>
+            
+            {loadingScores ? (
+              <p>Loading score data...</p>
+            ) : scoresError ? (
+              <div className="error-message">Error loading scores: {scoresError}</div>
+            ) : scores.length > 0 ? (
+              <div className="scores-summary">
+                <p>Found {scores.length} paper analysis scores for this hypothesis</p>
+                <div className="scores-table-container">
+                  <table className="scores-table">
+                    <thead>
+                      <tr>
+                        <th>Paper Title</th>
+                        <th>Journal</th>
+                        <th>Published</th>
+                        <th>Verdict</th>
+                        <th>Credibility</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scores.map(score => (
+                        <tr key={score.id}>
+                          <td>{score.paper_title}</td>
+                          <td>{score.journal}</td>
+                          <td>{formatDate(score.published_date)}</td>
+                          <td className={`verdict verdict-${score.verdict}`}>{score.verdict}</td>
+                          <td>{score.paper_credibility_score?.toFixed(2) || 'N/A'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <p>No scores available for this hypothesis.</p>
+            )}
           </div>
         ) : (
           <p>Select a hypothesis to view its data visualization.</p>
