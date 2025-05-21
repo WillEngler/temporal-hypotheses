@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import LK99Chart from './components/LK99Chart';
 import KPISummary from './components/KPISummary';
 import SuperconductorAnalysis from './components/SuperconductorAnalysis';
+import MultipleHypotheses from './components/MultipleHypotheses';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -25,6 +26,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<LK99Chart />} />
           <Route path="/kpi-summaries" element={<KPISummary />} />
+          <Route path="/multiple-hypotheses" element={<MultipleHypotheses />} />
           <Route path="/superconductor-analysis" element={<SuperconductorAnalysis />} />
         </Routes>
       </main>
