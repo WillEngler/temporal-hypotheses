@@ -354,8 +354,8 @@ const MultipleHypotheses: React.FC = () => {
   const [timelineData, setTimelineData] = useState<TimelineDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingScores, setLoadingScores] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [scoresError, setScoresError] = useState<string | null>(null);
+  const [error, ] = useState<string | null>(null);
+  const [scoresError, ] = useState<string | null>(null);
 
   useEffect(() => {
     // Using mock data instead of fetching from Supabase
