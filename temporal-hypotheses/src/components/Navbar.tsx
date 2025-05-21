@@ -31,6 +31,14 @@ const Navbar: React.FC = () => {
               KPI Summaries
             </NavLink>
             <NavLink 
+              to="/multiple-hypotheses" 
+              className={({ isActive }) => 
+                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
+              }
+            >
+              Multiple Hypotheses
+            </NavLink>
+            <NavLink 
               to="/superconductor-analysis" 
               className={({ isActive }) => 
                 `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
