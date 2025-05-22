@@ -3,24 +3,24 @@ import { NavLink } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   return (
-    <nav className="bg-primary-700 shadow-md border-b-3 border-primary-500 py-2">
-      <div className="max-w-6xl mx-auto px-4 flex justify-between">
+    <nav className="bg-primary-900/95 backdrop-blur-sm border-b border-primary-700/50 py-3">
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         <div className="flex items-center">
-          {/* Logo */}
-          <div className="text-white font-semibold text-xl mr-8">
+          {/* Enhanced Logo */}
+          <div className="text-white font-bold text-xl mr-12 tracking-tight">
             APTO-Synoptic
           </div>
           
-          {/* Research Domains */}
-          <div className="flex gap-4">
+          {/* Research Domains with refined styling */}
+          <div className="flex gap-2">
             <div 
-              className="px-4 py-2 rounded bg-gray-750 text-gray-400 cursor-pointer opacity-70 transition-all duration-200 hover:bg-gray-600 hover:opacity-80" 
+              className="px-4 py-2.5 rounded-lg bg-primary-800/50 text-primary-300 cursor-not-allowed opacity-60 text-sm font-medium transition-all duration-200" 
               title="Coming Soon"
             >
               Energy Storage
             </div>
             <div 
-              className="px-4 py-2 rounded bg-gray-750 text-gray-400 cursor-pointer opacity-70 transition-all duration-200 hover:bg-gray-600 hover:opacity-80" 
+              className="px-4 py-2.5 rounded-lg bg-primary-800/50 text-primary-300 cursor-not-allowed opacity-60 text-sm font-medium transition-all duration-200" 
               title="Coming Soon"
             >
               Microchips
@@ -28,10 +28,10 @@ const Navbar: React.FC = () => {
             <NavLink 
               to="/superconductors" 
               className={({ isActive }) => 
-                `px-4 py-2 rounded text-sm font-medium transition-all duration-200 ${
+                `px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive 
-                    ? 'bg-primary-500 text-white' 
-                    : 'bg-gray-750 text-gray-100 hover:bg-primary-700'
+                    ? 'bg-accent-500 text-white shadow-glow' 
+                    : 'bg-primary-800/70 text-primary-100 hover:bg-accent-600/80 hover:text-white'
                 }`
               }
             >

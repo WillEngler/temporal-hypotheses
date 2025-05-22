@@ -431,13 +431,13 @@ const CurrentOpenQuestions: React.FC = () => {
   const getVerdictColor = (verdict: 'support' | 'reject' | 'neutral'): string => {
     switch (verdict) {
       case 'support':
-        return '#4caf50';
+        return '#10b981';
       case 'reject':
-        return '#f44336';
+        return '#ef4444';
       case 'neutral':
-        return '#2196f3';
+        return '#6b7280';
       default:
-        return '#9e9e9e';
+        return '#9ca3af';
     }
   };
 
@@ -445,17 +445,31 @@ const CurrentOpenQuestions: React.FC = () => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="timeline-tooltip">
-          <p className="tooltip-title">{data.title}</p>
-          <p className="tooltip-journal">{data.journal} ({data.dateStr})</p>
-          <p className="tooltip-scores">
-            Paper credibility: {(data.paperScore ?? 0).toFixed(2)}<br />
-            Argument credibility: {(data.argumentScore ?? 0).toFixed(2)}
-          </p>
-          <p className="tooltip-verdict">
-            <span className={`verdict verdict-${data.verdict}`}>{data.verdict}</span>
-          </p>
-          {data.reason && <p className="tooltip-reason">{data.reason}</p>}
+        <div className="bg-white/95 backdrop-blur-sm p-4 border border-accent-200 rounded-lg shadow-large text-sm max-w-sm">
+          <div className="font-semibold text-primary-900 mb-2 line-clamp-2">{data.title}</div>
+          <div className="text-primary-700 mb-2">{data.journal} ({data.dateStr})</div>
+          <div className="space-y-1 mb-3">
+            <div className="text-primary-600 text-xs">Paper Credibility: {(data.paperScore ?? 0).toFixed(2)}</div>
+            <div className="text-primary-600 text-xs">Argument Credibility: {(data.argumentScore ?? 0).toFixed(2)}</div>
+          </div>
+          <div className="flex items-center space-x-2 mb-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: data.fill }}
+            ></div>
+            <span className={`font-medium text-sm capitalize ${
+              data.verdict === 'support' ? 'text-success-600' : 
+              data.verdict === 'reject' ? 'text-danger-600' : 
+              'text-neutral-600'
+            }`}>
+              {data.verdict}
+            </span>
+          </div>
+          {data.reason && (
+            <div className="text-primary-600 text-xs mt-2 pt-2 border-t border-accent-200 line-clamp-3">
+              {data.reason}
+            </div>
+          )}
         </div>
       );
     }
@@ -464,108 +478,132 @@ const CurrentOpenQuestions: React.FC = () => {
 
   if (loading) {
     return (
-      <section className="mt-6">
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-lg font-medium text-gray-900">Current Open Questions</h2>
-          <div className="text-sm text-gray-500">Loading...</div>
+      <section className="mt-6 animate-slide-up">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-primary-900">Current Open Questions</h2>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-accent-200 border-t-accent-500 rounded-full animate-spin"></div>
+            <div className="text-sm text-primary-600 font-medium">Loading...</div>
+          </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="mt-6">
-      {/* Header with hypothesis selection flush */}
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-lg font-medium text-gray-900">Current Open Questions</h2>
-        <select 
-          value={selectedHypothesisId || ''} 
-          onChange={handleHypothesisChange}
-          className="text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          disabled={loading}
-        >
-          {hypotheses.length > 0 ? (
-            hypotheses.map(hypothesis => (
-              <option key={hypothesis.id} value={hypothesis.id}>
-                {hypothesis.text}
-              </option>
-            ))
-          ) : (
-            <option>No hypotheses available</option>
-          )}
-        </select>
+    <section className="mt-6 animate-slide-up">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-semibold text-primary-900">Current Open Questions</h2>
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium text-primary-700">Hypothesis:</label>
+          <select 
+            value={selectedHypothesisId || ''} 
+            onChange={handleHypothesisChange}
+            className="text-sm border border-accent-300 rounded px-3 py-1.5 bg-white/80 backdrop-blur-sm text-primary-700 focus:outline-none focus:ring-1 focus:ring-accent-500 focus:border-accent-500 transition-all duration-200 hover:bg-white/90 min-w-[280px]"
+            disabled={loading}
+          >
+            {hypotheses.length > 0 ? (
+              hypotheses.map(hypothesis => (
+                <option key={hypothesis.id} value={hypothesis.id}>
+                  {hypothesis.text}
+                </option>
+              ))
+            ) : (
+              <option>No hypotheses available</option>
+            )}
+          </select>
+        </div>
       </div>
 
       {/* Chart and analysis content */}
       {selectedHypothesisId && (
-        <div className="bg-white border border-gray-200 px-4 pt-4 pb-1">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-large border border-white/60 px-4 pt-4 pb-0 hover:shadow-glow transition-all duration-300 hover:bg-white/90">
           {loadingScores ? (
             <div className="text-center py-8">
-              <div className="text-gray-600">Loading hypothesis data...</div>
+              <div className="w-6 h-6 border-2 border-accent-200 border-t-accent-500 rounded-full animate-spin mx-auto mb-3"></div>
+              <div className="text-primary-600 font-medium text-sm">Loading hypothesis data...</div>
             </div>
           ) : scores.length > 0 ? (
-            <>
-              <div className="timeline-container" style={{ marginBottom: '0.75rem' }}>
-                <h4 className="text-base font-medium text-gray-900 mb-1 text-center">
+            <div className="timeline-container">
+              <div className="text-center mb-3">
+                <h4 className="text-base font-semibold text-primary-900 mb-2">
                   {hypotheses.find(h => h.id === selectedHypothesisId)?.text}
                 </h4>
-                <div className="timeline-legend mb-2">
-                  <div className="flex justify-center space-x-4">
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 rounded" style={{ backgroundColor: '#4caf50' }}></span>
-                      <span className="ml-1 text-sm text-gray-600">Support</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 rounded" style={{ backgroundColor: '#f44336' }}></span>
-                      <span className="ml-1 text-sm text-gray-600">Reject</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 rounded" style={{ backgroundColor: '#2196f3' }}></span>
-                      <span className="ml-1 text-sm text-gray-600">Neutral</span>
-                    </div>
+              </div>
+              
+              {/* Compact Legend */}
+              <div className="timeline-legend mb-3">
+                <div className="flex justify-center space-x-6">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }}></div>
+                    <span className="text-xs font-medium text-success-600">Support</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ef4444' }}></div>
+                    <span className="text-xs font-medium text-danger-600">Reject</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#6b7280' }}></div>
+                    <span className="text-xs font-medium text-neutral-600">Neutral</span>
                   </div>
                 </div>
-                <div className="timeline-chart" style={{ height: '200px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ScatterChart
-                      margin={{ top: 15, right: 20, bottom: 25, left: 45 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis
-                        dataKey="date"
-                        name="Date"
-                        domain={['dataMin', 'dataMax']}
-                        tickFormatter={(unixTime) => new Date(unixTime).toLocaleDateString('en-US', { year: 'numeric' })}
-                        type="number"
-                        label={{ value: 'Publication Date', position: 'insideBottom', offset: -10 }}
-                        fontSize={11}
-                        tick={{ fontSize: 11 }}
-                        axisLine={{ stroke: '#d1d5db' }}
-                        tickLine={{ stroke: '#d1d5db' }}
-                      />
-                      <YAxis
-                        dataKey="score"
-                        name="Score"
-                        domain={[-1, 1]}
-                        ticks={[-1, -0.5, 0, 0.5, 1]}
-                        tickFormatter={(value) => value === 0 ? '0' : value.toString()}
-                        label={{ value: 'Confirmation Strength', angle: -90, position: 'outside', textAnchor: 'middle', dx: -20 }}
-                        fontSize={11}
-                        tick={{ fontSize: 11 }}
-                        axisLine={{ stroke: '#d1d5db' }}
-                        tickLine={{ stroke: '#d1d5db' }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <ReferenceLine y={0} stroke="#666" />
-                      <ZAxis range={[60, 60]} />
-                      <Scatter
-                        data={timelineData}
-                      />
-                    </ScatterChart>
-                  </ResponsiveContainer>
-                </div>
               </div>
-            </>
+              <div className="timeline-chart" style={{ height: '220px' }}>
+                                  <ResponsiveContainer width="100%" height="100%">
+                    <ScatterChart
+                      margin={{ top: 15, right: 30, bottom: 25, left: 50 }}
+                    >
+                    <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" strokeWidth={1} />
+                    <XAxis
+                      dataKey="date"
+                      name="Date"
+                      domain={['dataMin', 'dataMax']}
+                      tickFormatter={(unixTime) => new Date(unixTime).toLocaleDateString('en-US', { year: 'numeric' })}
+                      type="number"
+                      label={{ 
+                        value: 'Publication Date', 
+                        position: 'insideBottom', 
+                        offset: -15,
+                        style: { fontSize: '12px', fill: '#64748b', fontWeight: 500 }
+                      }}
+                      fontSize={12}
+                      tick={{ fontSize: 12, fill: '#475569' }}
+                      axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                      tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    />
+                    <YAxis
+                      dataKey="score"
+                      name="Score"
+                      domain={[-1, 1]}
+                      ticks={[-1, -0.5, 0, 0.5, 1]}
+                      tickFormatter={(value) => value === 0 ? '0' : value.toString()}
+                      label={{ 
+                        value: 'Confirmation Strength', 
+                        angle: -90, 
+                        position: 'outside', 
+                        textAnchor: 'middle', 
+                        dx: -35,
+                        style: { fontSize: '12px', fill: '#64748b', fontWeight: 500 }
+                      }}
+                      fontSize={12}
+                      tick={{ fontSize: 12, fill: '#475569' }}
+                      axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                      tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="2 2" strokeWidth={1} />
+                    <ZAxis range={[80, 80]} />
+                    <Scatter
+                      data={timelineData}
+                      fillOpacity={0.8}
+                      strokeWidth={1}
+                      strokeOpacity={0.9}
+                    />
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           ) : (
             <div className="text-center py-8">
               <div className="text-gray-600">No scores available for this hypothesis.</div>

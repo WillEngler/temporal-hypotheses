@@ -123,80 +123,113 @@ const SuperconductorsDomain: React.FC = () => {
   const tempRanges = [0, 30, 60, 90, 120, 150];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Compact Header */}
-      <header className="bg-white border-b border-gray-200 py-3 pb-2">
-        <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-xl text-gray-700 font-normal">
-            <span className="font-bold text-gray-900">662</span> Superconductor research papers and spec sheets analyzed
-          </h1>
+    <div className="min-h-screen">
+      {/* Compact Enhanced Header */}
+      <header className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900 to-primary-800"></div>
+        <div className="relative max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="w-1.5 h-1.5 bg-accent-400 rounded-full animate-glow"></div>
+                <span className="text-accent-300 font-medium text-xs tracking-wide uppercase">Research Analysis</span>
+              </div>
+              <h1 className="text-xl font-semibold text-white">
+                <span className="text-2xl font-bold">662</span> superconductor research papers analyzed
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="text-white/90"><span className="font-bold text-white">50+</span> KPIs tracked</div>
+              <div className="text-white/90"><span className="font-bold text-white">15+</span> material classes</div>
+              <div className="text-white/90"><span className="font-bold text-white">2020-2024</span> publication years</div>
+            </div>
+          </div>
         </div>
       </header>
       
-      <main className="max-w-6xl mx-auto px-4 py-3">
-        {/* Key Recent Findings Section with inline link */}
-        <section>
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-lg font-medium text-gray-900">Key Recent Findings</h2>
+      <main className="max-w-7xl mx-auto px-6 py-4">
+        {/* Key Recent Findings Section */}
+        <section className="animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-primary-900">Key Recent Findings</h2>
             <a 
               href="#"
-              className="text-sm text-primary-600 hover:text-primary-700 underline decoration-1 underline-offset-2 cursor-pointer"
+              className="group text-sm text-accent-600 hover:text-accent-700 flex items-center space-x-1 transition-all duration-200"
               onClick={(e) => {
                 e.preventDefault();
-                // Potemkin link - doesn't go anywhere
                 console.log('See more KPIs clicked - Potemkin link');
               }}
             >
-              See more KPIs linked to experimental data →
+              <span>See more KPIs linked to experimental data</span>
+              <svg className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </a>
           </div>
           
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {/* Chart 1: Oxygen Content vs Critical Temperature */}
-            <div className="bg-white border border-gray-200 p-2">
-              <h3 className="text-base font-medium text-gray-900 mb-3 text-center">
-                Oxygen Content vs Critical Temperature for Cuprates
-              </h3>
-              <div className="flex justify-center items-center mb-1" style={{ height: '44px' }}>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
-                  <span className="text-sm text-gray-600">Cuprates</span>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-large border border-white/60 p-4 hover:shadow-glow transition-all duration-300 hover:bg-white/90">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base font-semibold text-primary-900">
+                  Oxygen Content vs Critical Temperature
+                </h3>
+                <div className="flex items-center space-x-1 text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                  <div className="w-1.5 h-1.5 bg-accent-500 rounded-full"></div>
+                  <span>Cuprates</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <ScatterChart margin={{ top: 5, right: 50, bottom: 35, left: 30 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <ResponsiveContainer width="100%" height={280}>
+                <ScatterChart margin={{ top: 15, right: 50, bottom: 40, left: 35 }}>
+                  <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" strokeWidth={1} />
                   <XAxis
                     type="number"
                     dataKey="oxygen_percentage"
                     name="Oxygen Percentage"
-                    label={{ value: 'Oxygen Percentage', position: 'bottom', dy: 10 }}
-                    fontSize={11}
-                    tick={{ fontSize: 11 }}
-                    axisLine={{ stroke: '#d1d5db' }}
-                    tickLine={{ stroke: '#d1d5db' }}
+                    label={{ 
+                      value: 'Oxygen Percentage (%)', 
+                      position: 'bottom', 
+                      dy: 15,
+                      style: { fontSize: '12px', fill: '#64748b', fontWeight: 500 }
+                    }}
+                    fontSize={12}
+                    tick={{ fontSize: 12, fill: '#475569' }}
+                    axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                   />
                   <YAxis
                     type="number"
                     dataKey="properties_critical_temperature"
                     name="Critical Temperature (K)"
-                    label={{ value: 'Critical Temperature (K)', angle: -90, position: 'outside', textAnchor: 'middle', dx: -20 }}
-                    fontSize={11}
-                    tick={{ fontSize: 11 }}
-                    axisLine={{ stroke: '#d1d5db' }}
-                    tickLine={{ stroke: '#d1d5db' }}
+                    label={{ 
+                      value: 'Critical Temperature (K)', 
+                      angle: -90, 
+                      position: 'outside', 
+                      textAnchor: 'middle', 
+                      dx: -25,
+                      style: { fontSize: '12px', fill: '#64748b', fontWeight: 500 }
+                    }}
+                    fontSize={12}
+                    tick={{ fontSize: 12, fill: '#475569' }}
+                    axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                   />
                   <Tooltip 
-                    cursor={{ strokeDasharray: '3 3' }}
+                    cursor={{ strokeDasharray: '2 2', stroke: '#94a3b8', strokeWidth: 1 }}
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-white p-2 border border-gray-300 rounded shadow text-xs">
-                            <p>{`O₂: ${data.oxygen_percentage?.toFixed(1)}%`}</p>
-                            <p>{`Tc: ${data.properties_critical_temperature.toFixed(1)} K`}</p>
-                            <p className="text-gray-500">{extractYear(data.published_date)}</p>
-                            <p className="text-blue-600">Click to open paper</p>
+                          <div className="bg-white/95 backdrop-blur-sm p-4 border border-accent-200 rounded-lg shadow-large text-sm">
+                            <div className="font-semibold text-primary-900 mb-2">Material Properties</div>
+                            <div className="space-y-1">
+                              <p className="text-primary-700">{`Oxygen: ${data.oxygen_percentage?.toFixed(1)}%`}</p>
+                              <p className="text-primary-700">{`Tc: ${data.properties_critical_temperature.toFixed(1)} K`}</p>
+                              <p className="text-primary-500 text-xs">{extractYear(data.published_date)}</p>
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-accent-200">
+                              <p className="text-accent-600 text-xs font-medium">Click to open paper →</p>
+                            </div>
                           </div>
                         );
                       }
@@ -206,70 +239,97 @@ const SuperconductorsDomain: React.FC = () => {
                   <Scatter
                     name="Cuprates"
                     data={cuprateData}
-                    fill="#3b82f6"
+                    fill="#0ea5e9"
+                    fillOpacity={0.7}
+                    stroke="#0284c7"
+                    strokeWidth={1}
                     onClick={handleDotClick}
                     cursor="pointer"
+                    r={4}
                   />
                 </ScatterChart>
               </ResponsiveContainer>
             </div>
 
             {/* Chart 2: Lattice Parameters vs Critical Temperature */}
-            <div className="bg-white border border-gray-200 p-2">
-              <h3 className="text-base font-medium text-gray-900 mb-1 text-center">
-                Lattice Parameters vs Critical Temperature
-              </h3>
-              <div className="flex justify-center mb-1">
-                <div>
-                  <div className="text-sm text-gray-600 text-center mb-2">Critical Temperature (K)</div>
-                  <div className="flex items-center justify-center space-x-2">
-                    {tempRanges.map((temp, i) => (
-                      <div key={i} className="flex flex-col items-center">
-                        <div 
-                          className="w-2.5 h-2.5 border border-gray-300"
-                          style={{ backgroundColor: getTemperatureColor(temp) }}
-                        ></div>
-                        <span className="text-xs text-gray-600 mt-1">{temp}</span>
-                      </div>
-                    ))}
-                  </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-large border border-white/60 p-4 hover:shadow-glow transition-all duration-300 hover:bg-white/90">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base font-semibold text-primary-900">
+                  Lattice Parameters vs Critical Temperature
+                </h3>
+                <div className="flex items-center space-x-1 text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                  <div className="w-1.5 h-1.5 bg-gradient-to-r from-blue-500 to-red-500 rounded-full"></div>
+                  <span>All Materials</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <ScatterChart margin={{ top: 5, right: 50, bottom: 35, left: 30 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    type="number"
-                    dataKey="material_lattice_parameters_a"
+              
+              {/* Compact Temperature Legend */}
+              <div className="mb-3">
+                <div className="flex items-center justify-center space-x-2">
+                  <span className="text-xs text-primary-600 font-medium">Tc (K):</span>
+                  {tempRanges.map((temp, i) => (
+                    <div key={i} className="flex items-center space-x-1">
+                      <div 
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: getTemperatureColor(temp) }}
+                      ></div>
+                      <span className="text-xs text-primary-600">{temp}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={250}>
+                <ScatterChart margin={{ top: 5, right: 50, bottom: 40, left: 35 }}>
+                   <CartesianGrid strokeDasharray="2 2" stroke="#e2e8f0" strokeWidth={1} />
+                   <XAxis
+                     type="number"
+                     dataKey="material_lattice_parameters_a"
                     name="Lattice Parameter a (Å)"
-                    label={{ value: 'Lattice Parameter a (Å)', position: 'bottom', dy: 10 }}
-                    fontSize={11}
-                    tick={{ fontSize: 11 }}
-                    axisLine={{ stroke: '#d1d5db' }}
-                    tickLine={{ stroke: '#d1d5db' }}
+                    label={{ 
+                      value: 'Lattice Parameter a (Å)', 
+                      position: 'bottom', 
+                      dy: 15,
+                      style: { fontSize: '12px', fill: '#64748b', fontWeight: 500 }
+                    }}
+                    fontSize={12}
+                    tick={{ fontSize: 12, fill: '#475569' }}
+                    axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                   />
                   <YAxis
                     type="number"
                     dataKey="material_lattice_parameters_c"
                     name="Lattice Parameter c (Å)"
-                    label={{ value: 'Lattice Parameter c (Å)', angle: -90, position: 'outside', textAnchor: 'middle', dx: -20 }}
-                    fontSize={11}
-                    tick={{ fontSize: 11 }}
-                    axisLine={{ stroke: '#d1d5db' }}
-                    tickLine={{ stroke: '#d1d5db' }}
+                    label={{ 
+                      value: 'Lattice Parameter c (Å)', 
+                      angle: -90, 
+                      position: 'outside', 
+                      textAnchor: 'middle', 
+                      dx: -25,
+                      style: { fontSize: '12px', fill: '#64748b', fontWeight: 500 }
+                    }}
+                    fontSize={12}
+                    tick={{ fontSize: 12, fill: '#475569' }}
+                    axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                   />
                   <Tooltip 
-                    cursor={{ strokeDasharray: '3 3' }}
+                    cursor={{ strokeDasharray: '2 2', stroke: '#94a3b8', strokeWidth: 1 }}
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-white p-2 border border-gray-300 rounded shadow text-xs">
-                            <p>{`a: ${data.material_lattice_parameters_a.toFixed(3)} Å`}</p>
-                            <p>{`c: ${data.material_lattice_parameters_c.toFixed(3)} Å`}</p>
-                            <p>{`Tc: ${data.properties_critical_temperature.toFixed(1)} K`}</p>
-                            <p className="text-gray-500">{extractYear(data.published_date)}</p>
-                            <p className="text-blue-600">Click to open paper</p>
+                          <div className="bg-white/95 backdrop-blur-sm p-4 border border-accent-200 rounded-lg shadow-large text-sm">
+                            <div className="font-semibold text-primary-900 mb-2">Crystal Structure</div>
+                            <div className="space-y-1">
+                              <p className="text-primary-700">{`a-parameter: ${data.material_lattice_parameters_a.toFixed(3)} Å`}</p>
+                              <p className="text-primary-700">{`c-parameter: ${data.material_lattice_parameters_c.toFixed(3)} Å`}</p>
+                              <p className="text-primary-700">{`Tc: ${data.properties_critical_temperature.toFixed(1)} K`}</p>
+                              <p className="text-primary-500 text-xs">{extractYear(data.published_date)}</p>
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-accent-200">
+                              <p className="text-accent-600 text-xs font-medium">Click to open paper →</p>
+                            </div>
                           </div>
                         );
                       }
@@ -281,11 +341,17 @@ const SuperconductorsDomain: React.FC = () => {
                     data={data}
                     onClick={handleDotClick}
                     cursor="pointer"
+                    strokeWidth={1}
+                    strokeOpacity={0.8}
                   >
                     {data.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
                         fill={getTemperatureColor(entry.properties_critical_temperature)}
+                        fillOpacity={0.7}
+                        stroke="#ffffff"
+                        strokeWidth={0.5}
+                        r={4}
                       />
                     ))}
                   </Scatter>

@@ -6,7 +6,7 @@ import './App.css';
 const App = () => {
   return (
     <HashRouter>
-      <div className="min-h-screen bg-gray-50 w-full">
+      <div className="min-h-screen w-full">
         <Navbar />
         
         <main className="w-full p-0 text-left">
