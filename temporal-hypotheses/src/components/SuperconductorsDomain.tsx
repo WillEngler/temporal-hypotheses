@@ -132,55 +132,58 @@ const SuperconductorsDomain: React.FC = () => {
         </div>
       </header>
       
-      <main className="max-w-6xl mx-auto px-4 py-5">
+      <main className="max-w-6xl mx-auto px-4 py-3">
         {/* Key Recent Findings Section with inline link */}
         <section>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-lg font-medium text-gray-900">Key Recent Findings</h2>
-            <button 
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200 cursor-pointer rounded"
-              onClick={() => {
+            <a 
+              href="#"
+              className="text-sm text-primary-600 hover:text-primary-700 underline decoration-1 underline-offset-2 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
                 // Potemkin link - doesn't go anywhere
                 console.log('See more KPIs clicked - Potemkin link');
               }}
             >
-              See more KPIs linked to experimental data
-              <svg className="ml-1 w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
+              See more KPIs linked to experimental data →
+            </a>
           </div>
           
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             {/* Chart 1: Oxygen Content vs Critical Temperature */}
-            <div className="bg-white rounded border border-gray-200 p-4">
-              <h3 className="text-base font-medium text-gray-900 mb-3">
+            <div className="bg-white border border-gray-200 p-2">
+              <h3 className="text-base font-medium text-gray-900 mb-3 text-center">
                 Oxygen Content vs Critical Temperature for Cuprates
               </h3>
-              <div className="flex justify-start mb-3">
+              <div className="flex justify-center items-center mb-1" style={{ height: '44px' }}>
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
                   <span className="text-sm text-gray-600">Cuprates</span>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={300}>
-                <ScatterChart margin={{ top: 10, right: 20, bottom: 45, left: 10 }}>
+                <ScatterChart margin={{ top: 5, right: 50, bottom: 35, left: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis
                     type="number"
                     dataKey="oxygen_percentage"
                     name="Oxygen Percentage"
-                    label={{ value: 'Oxygen Percentage', position: 'bottom', dy: 20 }}
+                    label={{ value: 'Oxygen Percentage', position: 'bottom', dy: 10 }}
                     fontSize={11}
                     tick={{ fontSize: 11 }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
                   />
                   <YAxis
                     type="number"
                     dataKey="properties_critical_temperature"
                     name="Critical Temperature (K)"
-                    label={{ value: 'Critical Temperature (K)', angle: -90, position: 'insideLeft' }}
+                    label={{ value: 'Critical Temperature (K)', angle: -90, position: 'outside', textAnchor: 'middle', dx: -20 }}
                     fontSize={11}
                     tick={{ fontSize: 11 }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
                   />
                   <Tooltip 
                     cursor={{ strokeDasharray: '3 3' }}
@@ -211,42 +214,48 @@ const SuperconductorsDomain: React.FC = () => {
             </div>
 
             {/* Chart 2: Lattice Parameters vs Critical Temperature */}
-            <div className="bg-white rounded border border-gray-200 p-4">
-              <h3 className="text-base font-medium text-gray-900 mb-3">
+            <div className="bg-white border border-gray-200 p-2">
+              <h3 className="text-base font-medium text-gray-900 mb-1 text-center">
                 Lattice Parameters vs Critical Temperature
               </h3>
-              <div className="mb-3">
-                <div className="text-xs font-medium text-gray-700 mb-1">Critical Temperature (K)</div>
-                <div className="flex items-center space-x-1">
-                  {tempRanges.map((temp, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      <div 
-                        className="w-2.5 h-2.5 border border-gray-300"
-                        style={{ backgroundColor: getTemperatureColor(temp) }}
-                      ></div>
-                      <span className="text-xs text-gray-600 mt-0.5">{temp}</span>
-                    </div>
-                  ))}
+              <div className="flex justify-center mb-1">
+                <div>
+                  <div className="text-sm text-gray-600 text-center mb-2">Critical Temperature (K)</div>
+                  <div className="flex items-center justify-center space-x-2">
+                    {tempRanges.map((temp, i) => (
+                      <div key={i} className="flex flex-col items-center">
+                        <div 
+                          className="w-2.5 h-2.5 border border-gray-300"
+                          style={{ backgroundColor: getTemperatureColor(temp) }}
+                        ></div>
+                        <span className="text-xs text-gray-600 mt-1">{temp}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={300}>
-                <ScatterChart margin={{ top: 10, right: 20, bottom: 45, left: 10 }}>
+                <ScatterChart margin={{ top: 5, right: 50, bottom: 35, left: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis
                     type="number"
                     dataKey="material_lattice_parameters_a"
                     name="Lattice Parameter a (Å)"
-                    label={{ value: 'Lattice Parameter a (Å)', position: 'bottom', dy: 20 }}
+                    label={{ value: 'Lattice Parameter a (Å)', position: 'bottom', dy: 10 }}
                     fontSize={11}
                     tick={{ fontSize: 11 }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
                   />
                   <YAxis
                     type="number"
                     dataKey="material_lattice_parameters_c"
                     name="Lattice Parameter c (Å)"
-                    label={{ value: 'Lattice Parameter c (Å)', angle: -90, position: 'insideLeft' }}
+                    label={{ value: 'Lattice Parameter c (Å)', angle: -90, position: 'outside', textAnchor: 'middle', dx: -20 }}
                     fontSize={11}
                     tick={{ fontSize: 11 }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
                   />
                   <Tooltip 
                     cursor={{ strokeDasharray: '3 3' }}
