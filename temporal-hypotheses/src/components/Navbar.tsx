@@ -9,42 +9,24 @@ const Navbar: React.FC = () => {
         <div className="navbar-content">
           {/* Logo */}
           <div className="navbar-brand">
-            Temporal Hypotheses
+            APTO-Synoptic
           </div>
           
-          {/* Primary Nav */}
+          {/* Research Domains */}
           <div className="navbar-links">
+            <div className="nav-link nav-link-disabled" title="Coming Soon">
+              Energy Storage
+            </div>
+            <div className="nav-link nav-link-disabled" title="Coming Soon">
+              Microchips
+            </div>
             <NavLink 
-              to="/" 
+              to="/superconductors" 
               className={({ isActive }) => 
                 `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
               }
             >
-              Hypothesis Tracking
-            </NavLink>
-            <NavLink 
-              to="/kpi-summaries" 
-              className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
-              }
-            >
-              KPI Summaries
-            </NavLink>
-            <NavLink 
-              to="/multiple-hypotheses" 
-              className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
-              }
-            >
-              Multiple Hypotheses
-            </NavLink>
-            <NavLink 
-              to="/superconductor-analysis" 
-              className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
-              }
-            >
-              Superconductor Analysis
+              Superconductors
             </NavLink>
           </div>
         </div>

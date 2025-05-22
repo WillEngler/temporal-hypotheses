@@ -50,4 +50,16 @@
 
 .nav-link-inactive:hover {
   background-color: #2c3e50;
+}
+
+.nav-link-disabled {
+  background-color: #34495e;
+  color: #95a5a6;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.nav-link-disabled:hover {
+  background-color: #3c5a70;
+  opacity: 0.8;
 } 
