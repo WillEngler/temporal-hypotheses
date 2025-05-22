@@ -10,6 +10,7 @@ import {
   Cell
 } from 'recharts';
 import superconductorData from './SuperconductorData';
+import CurrentOpenQuestions from './CurrentOpenQuestions';
 
 interface SuperconductorData {
   material_composition: string;
@@ -293,6 +294,9 @@ const SuperconductorsDomain: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Current Open Questions Section */}
+        <CurrentOpenQuestions />
       </main>
     </div>
   );

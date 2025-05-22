@@ -89,6 +89,13 @@
   margin-bottom: 20px;
 }
 
+/* Specific styles for compact timeline in CurrentOpenQuestions */
+.timeline-chart[style*="height: 200px"] {
+  height: 200px !important;
+  margin-bottom: 0;
+  padding: 0;
+}
+
 .timeline-tooltip {
   background-color: white;
   border: 1px solid #ddd;
