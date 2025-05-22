@@ -6,13 +6,19 @@ import './App.css';
 const App = () => {
   return (
     <HashRouter>
-      <div className="app-container">
+      <div className="min-h-screen bg-gray-50 w-full">
         <Navbar />
         
-        <main className="app-main">
+        <main className="w-full p-0 text-left">
           <Routes>
             <Route path="/" element={<Navigate to="/superconductors" replace />} />
             <Route path="/superconductors" element={<SuperconductorsDomain />} />
+            {/* Redirect old routes to superconductors */}
+            <Route path="/kpi-summaries" element={<Navigate to="/superconductors" replace />} />
+            <Route path="/multiple-hypotheses" element={<Navigate to="/superconductors" replace />} />
+            <Route path="/superconductor-analysis" element={<Navigate to="/superconductors" replace />} />
+            {/* Catch all other routes */}
+            <Route path="*" element={<Navigate to="/superconductors" replace />} />
           </Routes>
         </main>
       </div>

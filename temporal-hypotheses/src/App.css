@@ -1,10 +1,4 @@
-#root {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
-
+/* Logo animations for potential future use */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -31,25 +25,4 @@
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-/* App layout styles */
-.app-container {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-  width: 100%;
-}
-
-.app-main {
-  width: 100%;
-  padding: 0;
-  text-align: left;
 }
