@@ -1,50 +1,41 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import './Navbar.css';
 
 const Navbar: React.FC = () => {
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-content">
-          {/* Logo */}
-          <div className="navbar-brand">
-            Temporal Hypotheses
+    <nav className="bg-primary-900/95 backdrop-blur-sm border-b border-primary-700/50 py-3">
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div className="flex items-center">
+          {/* Enhanced Logo */}
+          <div className="text-white font-bold text-xl mr-12 tracking-tight">
+            APTO-Synoptic
           </div>
           
-          {/* Primary Nav */}
-          <div className="navbar-links">
+          {/* Research Domains with refined styling */}
+          <div className="flex gap-2">
+            <div 
+              className="px-4 py-2.5 rounded-lg bg-primary-800/50 text-primary-300 cursor-not-allowed opacity-60 text-sm font-medium transition-all duration-200" 
+              title="Coming Soon"
+            >
+              Energy Storage
+            </div>
+            <div 
+              className="px-4 py-2.5 rounded-lg bg-primary-800/50 text-primary-300 cursor-not-allowed opacity-60 text-sm font-medium transition-all duration-200" 
+              title="Coming Soon"
+            >
+              Microchips
+            </div>
             <NavLink 
-              to="/" 
+              to="/superconductors" 
               className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
+                `px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive 
+                    ? 'bg-accent-500 text-white shadow-glow' 
+                    : 'bg-primary-800/70 text-primary-100 hover:bg-accent-600/80 hover:text-white'
+                }`
               }
             >
-              Hypothesis Tracking
-            </NavLink>
-            <NavLink 
-              to="/kpi-summaries" 
-              className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
-              }
-            >
-              KPI Summaries
-            </NavLink>
-            <NavLink 
-              to="/multiple-hypotheses" 
-              className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
-              }
-            >
-              Multiple Hypotheses
-            </NavLink>
-            <NavLink 
-              to="/superconductor-analysis" 
-              className={({ isActive }) => 
-                `nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`
-              }
-            >
-              Superconductor Analysis
+              Superconductors
             </NavLink>
           </div>
         </div>

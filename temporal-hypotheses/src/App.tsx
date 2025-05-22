@@ -1,43 +1,27 @@
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
-import LK99Chart from './components/LK99Chart';
-import KPISummary from './components/KPISummary';
-import SuperconductorAnalysis from './components/SuperconductorAnalysis';
-import MultipleHypotheses from './components/MultipleHypotheses';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import SuperconductorsDomain from './components/SuperconductorsDomain';
 import Navbar from './components/Navbar';
 import './App.css';
-
-// Create a wrapper component to handle conditional rendering based on route
-const AppContent = () => {
-  const location = useLocation();
-  const isHomePage = location.pathname === "/" || location.pathname === "";
-  
-  return (
-    <div className="app-container">
-      <Navbar />
-      
-      {isHomePage && (
-        <header className="app-header">
-          <h1>LK-99 Veracity & Market Probability Visualization</h1>
-          <p>Interactive chart based on paper analysis and market data</p>
-        </header>
-      )}
-      
-      <main className="app-main">
-        <Routes>
-          <Route path="/" element={<LK99Chart />} />
-          <Route path="/kpi-summaries" element={<KPISummary />} />
-          <Route path="/multiple-hypotheses" element={<MultipleHypotheses />} />
-          <Route path="/superconductor-analysis" element={<SuperconductorAnalysis />} />
-        </Routes>
-      </main>
-    </div>
-  );
-};
 
 const App = () => {
   return (
     <HashRouter>
-      <AppContent />
+      <div className="min-h-screen w-full">
+        <Navbar />
+        
+        <main className="w-full p-0 text-left">
+          <Routes>
+            <Route path="/" element={<Navigate to="/superconductors" replace />} />
+            <Route path="/superconductors" element={<SuperconductorsDomain />} />
+            {/* Redirect old routes to superconductors */}
+            <Route path="/kpi-summaries" element={<Navigate to="/superconductors" replace />} />
+            <Route path="/multiple-hypotheses" element={<Navigate to="/superconductors" replace />} />
+            <Route path="/superconductor-analysis" element={<Navigate to="/superconductors" replace />} />
+            {/* Catch all other routes */}
+            <Route path="*" element={<Navigate to="/superconductors" replace />} />
+          </Routes>
+        </main>
+      </div>
     </HashRouter>
   );
 };

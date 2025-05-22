@@ -55,9 +55,9 @@
   margin-bottom: 16px;
 }
 
-.timeline-container {
-  margin-bottom: 30px;
-}
+/* .timeline-container {
+  margin-bottom: 1px;
+} */
 
 .timeline-container h4 {
   margin-bottom: 10px;
@@ -87,6 +87,13 @@
   width: 100%;
   height: 300px;
   margin-bottom: 20px;
+}
+
+/* Specific styles for compact timeline in CurrentOpenQuestions */
+.timeline-chart[style*="height: 200px"] {
+  height: 200px !important;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .timeline-tooltip {
