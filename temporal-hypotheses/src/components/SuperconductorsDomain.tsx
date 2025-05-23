@@ -140,8 +140,8 @@ const SuperconductorsDomain: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-4 text-sm leading-none">
-              <div className="text-white/90 leading-none"><span className="font-bold text-white">50+</span> KPIs tracked</div>
-              <div className="text-white/90 leading-none"><span className="font-bold text-white">15+</span> material classes</div>
+              {/* <div className="text-white/90 leading-none"><span className="font-bold text-white">50+</span> KPIs tracked</div>
+              <div className="text-white/90 leading-none"><span className="font-bold text-white">15+</span> material classes</div> */}
               <div className="text-white/90 leading-none"><span className="font-bold text-white">2020-2024</span> publication years</div>
             </div>
           </div>
