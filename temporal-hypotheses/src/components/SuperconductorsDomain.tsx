@@ -132,16 +132,17 @@ const SuperconductorsDomain: React.FC = () => {
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
                 <div className="w-1.5 h-1.5 bg-accent-400 rounded-full animate-glow"></div>
-                <span className="text-accent-300 font-medium text-xs tracking-wide uppercase">Research Analysis</span>
+                <span className="text-accent-300 font-medium text-xs tracking-wide uppercase leading-none">Research Analysis</span>
               </div>
-              <h1 className="text-xl font-semibold text-white">
-                <span className="text-2xl font-bold">662</span> superconductor research papers analyzed
+              <h1 className="text-xl font-semibold text-white leading-none flex items-baseline">
+                <span className="text-2xl font-bold leading-none">662</span>
+                <span className="ml-1">superconductor research papers analyzed</span>
               </h1>
             </div>
-            <div className="flex items-center space-x-4 text-sm">
-              <div className="text-white/90"><span className="font-bold text-white">50+</span> KPIs tracked</div>
-              <div className="text-white/90"><span className="font-bold text-white">15+</span> material classes</div>
-              <div className="text-white/90"><span className="font-bold text-white">2020-2024</span> publication years</div>
+            <div className="flex items-center space-x-4 text-sm leading-none">
+              <div className="text-white/90 leading-none"><span className="font-bold text-white">50+</span> KPIs tracked</div>
+              <div className="text-white/90 leading-none"><span className="font-bold text-white">15+</span> material classes</div>
+              <div className="text-white/90 leading-none"><span className="font-bold text-white">2020-2024</span> publication years</div>
             </div>
           </div>
         </div>
