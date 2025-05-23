@@ -1,3 +1,23 @@
+export interface HypothesisScore {
+    id: number;
+    paper_doi: string;
+    paper_title: string;
+    model: string;
+    journal: string;
+    paper_credibility_score: number | null;
+    hypothesis_id: number;
+    verdict: 'support' | 'reject' | 'neutral';
+    reason: string | null;
+    argument_credibility_score: number | null;
+    created_at: string;
+    published_date: string;
+}
+  
+export interface Hypothesis {
+    id: number;
+    text: string;
+}
+
 // Mock data for hypotheses
 const MOCK_HYPOTHESES: Hypothesis[] = [
     {

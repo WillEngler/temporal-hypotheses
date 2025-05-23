@@ -11,27 +11,10 @@ import {
   ZAxis
 } from 'recharts';
 import { MOCK_HYPOTHESES, MOCK_SCORES } from './HypothesisData';
+import type { Hypothesis, HypothesisScore } from './HypothesisData';
 import './MultipleHypotheses.css';
 
-interface Hypothesis {
-  id: number;
-  text: string;
-}
 
-interface HypothesisScore {
-  id: number;
-  paper_doi: string;
-  paper_title: string;
-  model: string;
-  journal: string;
-  paper_credibility_score: number | null;
-  hypothesis_id: number;
-  verdict: 'support' | 'reject' | 'neutral';
-  reason: string | null;
-  argument_credibility_score: number | null;
-  created_at: string;
-  published_date: string;
-}
 
 interface TimelineDataPoint {
   date: number;
@@ -45,7 +28,6 @@ interface TimelineDataPoint {
   argumentScore: number | null;
   fill?: string;
 }
-
 
 
 const CurrentOpenQuestions: React.FC = () => {
