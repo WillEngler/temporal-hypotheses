@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import SuperconductorsDomain from './components/SuperconductorsDomain';
+import Export from './components/Export';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -13,6 +14,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Navigate to="/superconductors" replace />} />
             <Route path="/superconductors" element={<SuperconductorsDomain />} />
+            <Route path="/export" element={<Export />} />
             {/* Redirect old routes to superconductors */}
             <Route path="/kpi-summaries" element={<Navigate to="/superconductors" replace />} />
             <Route path="/multiple-hypotheses" element={<Navigate to="/superconductors" replace />} />
