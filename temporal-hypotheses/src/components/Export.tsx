@@ -117,11 +117,11 @@ const Export: React.FC = () => {
   const exportDomainCSV = async (domain: string): Promise<ExportProgress> => {
     try {
       // Update progress
-      const progress: ExportProgress = {
-        domain,
-        status: 'processing',
-        message: 'Querying database...'
-      };
+    //   const progress: ExportProgress = {
+    //     domain,
+    //     status: 'processing',
+    //     message: 'Querying database...'
+    //   };
 
       // Query papers from specified domain that are processed and screened
       const { data: papers, error } = await supabase
