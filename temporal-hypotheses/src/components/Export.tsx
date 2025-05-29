@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import supabase from '../services/supabase';
 
+// Available domains
+const AVAILABLE_DOMAINS = [
+  { id: 'superconductors', label: 'Superconductors', description: 'High-temperature superconductivity research' },
+  { id: 'semiconductors', label: 'Semiconductors', description: 'Semiconductor materials and devices' },
+  { id: 'quantum', label: 'Quantum', description: 'Quantum materials and phenomena' },
+  { id: 'magnets', label: 'Magnets', description: 'Magnetic materials and properties' },
+  { id: 'energy_storage', label: 'Energy Storage', description: 'Battery and energy storage technologies' },
+];
+
 // Interface matching the database schema
 interface PaperData {
   paper_id: string;
@@ -12,6 +21,14 @@ interface PaperData {
   processed: boolean;
   screened: boolean;
   screen_passed: boolean;
+}
+
+// Export progress tracking
+interface ExportProgress {
+  domain: string;
+  status: 'pending' | 'processing' | 'complete' | 'error';
+  message: string;
+  count?: number;
 }
 
 // Helper function to flatten JSON similar to the Python script
@@ -83,19 +100,34 @@ const downloadCSV = (csvContent: string, filename: string) => {
 };
 
 const Export: React.FC = () => {
+  const [selectedDomains, setSelectedDomains] = useState<string[]>(['superconductors']);
   const [loading, setLoading] = useState(false);
-  const [exportStatus, setExportStatus] = useState<string>('');
+  const [exportProgress, setExportProgress] = useState<ExportProgress[]>([]);
 
-  const exportSuperconductorsCSV = async () => {
+  // Handle domain selection
+  const handleDomainToggle = (domainId: string) => {
+    setSelectedDomains(prev => 
+      prev.includes(domainId)
+        ? prev.filter(id => id !== domainId)
+        : [...prev, domainId]
+    );
+  };
+
+  // Export data for a single domain
+  const exportDomainCSV = async (domain: string): Promise<ExportProgress> => {
     try {
-      setLoading(true);
-      setExportStatus('Querying database...');
+      // Update progress
+      const progress: ExportProgress = {
+        domain,
+        status: 'processing',
+        message: 'Querying database...'
+      };
 
-      // Query papers from superconductors domain that are processed and screened
+      // Query papers from specified domain that are processed and screened
       const { data: papers, error } = await supabase
         .from('papers')
         .select('paper_id, title, authors, published_date, output, domain, processed, screened, screen_passed')
-        .eq('domain', 'superconductors')
+        .eq('domain', domain)
         .eq('processed', true)
         .eq('screened', true)
         .eq('screen_passed', true)
@@ -106,11 +138,13 @@ const Export: React.FC = () => {
       }
 
       if (!papers || papers.length === 0) {
-        setExportStatus('No data found for superconductors domain.');
-        return;
+        return {
+          domain,
+          status: 'complete',
+          message: 'No data found',
+          count: 0
+        };
       }
-
-      setExportStatus(`Processing ${papers.length} papers...`);
 
       // Fields to keep as JSON strings (similar to Python script)
       const keepAsJson = [
@@ -151,23 +185,81 @@ const Export: React.FC = () => {
         }
       });
 
-      setExportStatus(`Generating CSV for ${csvData.length} material entries...`);
-
       // Convert to CSV and download
       const csvContent = convertToCSV(csvData);
       const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `superconductors_export_${timestamp}.csv`;
+      const filename = `${domain}_export_${timestamp}.csv`;
       
       downloadCSV(csvContent, filename);
       
-      setExportStatus(`Successfully exported ${csvData.length} entries to ${filename}`);
+      return {
+        domain,
+        status: 'complete',
+        message: `Successfully exported ${csvData.length} entries`,
+        count: csvData.length
+      };
       
     } catch (error) {
-      console.error('Export error:', error);
-      setExportStatus(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
+      console.error(`Export error for ${domain}:`, error);
+      return {
+        domain,
+        status: 'error',
+        message: `Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
     }
+  };
+
+  // Export selected domains
+  const exportSelectedDomains = async () => {
+    if (selectedDomains.length === 0) {
+      alert('Please select at least one domain to export.');
+      return;
+    }
+
+    setLoading(true);
+    
+    // Initialize progress for all selected domains
+    const initialProgress: ExportProgress[] = selectedDomains.map(domain => ({
+      domain,
+      status: 'pending',
+      message: 'Waiting...'
+    }));
+    setExportProgress(initialProgress);
+
+    // Export each domain sequentially
+    for (let i = 0; i < selectedDomains.length; i++) {
+      const domain = selectedDomains[i];
+      
+      // Update progress to show current domain being processed
+      setExportProgress(prev => prev.map(p => 
+        p.domain === domain 
+          ? { ...p, status: 'processing', message: 'Querying database...' }
+          : p
+      ));
+
+      try {
+        const result = await exportDomainCSV(domain);
+        
+        // Update progress with result
+        setExportProgress(prev => prev.map(p => 
+          p.domain === domain ? result : p
+        ));
+      } catch (error) {
+        // Update progress with error
+        setExportProgress(prev => prev.map(p => 
+          p.domain === domain 
+            ? { ...p, status: 'error', message: 'Export failed' }
+            : p
+        ));
+      }
+    }
+
+    setLoading(false);
+  };
+
+  // Clear progress
+  const clearProgress = () => {
+    setExportProgress([]);
   };
 
   return (
@@ -187,7 +279,7 @@ const Export: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-4 text-sm leading-none">
-              <div className="text-white/90 leading-none"><span className="font-bold text-white">Multiple</span> formats available</div>
+              <div className="text-white/90 leading-none"><span className="font-bold text-white">{selectedDomains.length}</span> domain{selectedDomains.length !== 1 ? 's' : ''} selected</div>
             </div>
           </div>
         </div>
@@ -195,69 +287,101 @@ const Export: React.FC = () => {
       
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-large border border-white/60 p-8">
-          <h2 className="text-2xl font-semibold text-primary-900 mb-4">Export Options</h2>
+          <h2 className="text-2xl font-semibold text-primary-900 mb-4">Domain Selection & Export</h2>
           <p className="text-primary-700 mb-6">
-            Export processed and screened research data from the superconductors domain in various formats.
+            Select one or more research domains to export. Each domain will generate a separate CSV file with processed and screened data.
           </p>
           
-          {/* Status Display */}
-          {exportStatus && (
-            <div className="mb-6 p-4 bg-primary-50 border border-primary-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                {loading && (
-                  <div className="w-4 h-4 border-2 border-accent-200 border-t-accent-500 rounded-full animate-spin"></div>
+          {/* Domain Selection */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-primary-900 mb-4">Select Domains</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {AVAILABLE_DOMAINS.map((domain) => (
+                <label 
+                  key={domain.id}
+                  className="flex items-start space-x-3 p-4 border border-primary-200 rounded-lg hover:bg-primary-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedDomains.includes(domain.id)}
+                    onChange={() => handleDomainToggle(domain.id)}
+                    className="mt-1 w-4 h-4 text-accent-600 border-primary-300 rounded focus:ring-accent-500"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-primary-900">{domain.label}</div>
+                    <div className="text-xs text-primary-600 mt-1">{domain.description}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Export Button */}
+          <div className="mb-6">
+            <button 
+              className="px-6 py-3 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 text-lg font-medium"
+              onClick={exportSelectedDomains}
+              disabled={loading || selectedDomains.length === 0}
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Exporting...</span>
+                </>
+              ) : (
+                <>
+                  <span>Export Selected Domains</span>
+                  <span className="text-sm">({selectedDomains.length})</span>
+                </>
+              )}
+            </button>
+          </div>
+          
+          {/* Progress Display */}
+          {exportProgress.length > 0 && (
+            <div className="mb-6 p-6 bg-primary-50 border border-primary-200 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-primary-900">Export Progress</h4>
+                {!loading && (
+                  <button 
+                    onClick={clearProgress}
+                    className="text-sm text-accent-600 hover:text-accent-700"
+                  >
+                    Clear
+                  </button>
                 )}
-                <span className="text-primary-700 text-sm">{exportStatus}</span>
+              </div>
+              <div className="space-y-3">
+                {exportProgress.map((progress) => (
+                  <div key={progress.domain} className="flex items-center justify-between p-3 bg-white rounded border">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        progress.status === 'pending' ? 'bg-gray-300' :
+                        progress.status === 'processing' ? 'bg-accent-500' :
+                        progress.status === 'complete' ? 'bg-green-500' :
+                        'bg-red-500'
+                      }`}></div>
+                      <div>
+                        <div className="font-medium text-primary-900 capitalize">
+                          {AVAILABLE_DOMAINS.find(d => d.id === progress.domain)?.label || progress.domain}
+                        </div>
+                        <div className="text-sm text-primary-600">{progress.message}</div>
+                      </div>
+                    </div>
+                    {progress.status === 'processing' && (
+                      <div className="w-4 h-4 border-2 border-accent-200 border-t-accent-500 rounded-full animate-spin"></div>
+                    )}
+                    {progress.status === 'complete' && progress.count !== undefined && (
+                      <div className="text-sm font-medium text-green-600">{progress.count} entries</div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
           
-          {/* Export Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="border border-primary-200 rounded-lg p-6 bg-primary-50/50">
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">Superconductors CSV Export</h3>
-              <p className="text-primary-600 text-sm mb-4">Export flattened superconductors research data with one row per material</p>
-              <button 
-                className="px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                onClick={exportSuperconductorsCSV}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Exporting...</span>
-                  </>
-                ) : (
-                  <span>Export CSV</span>
-                )}
-              </button>
-            </div>
-            
-            <div className="border border-primary-200 rounded-lg p-6 bg-primary-50/50">
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">JSON Export</h3>
-              <p className="text-primary-600 text-sm mb-4">Export structured data in JSON format</p>
-              <button 
-                className="px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Coming Soon
-              </button>
-            </div>
-            
-            <div className="border border-primary-200 rounded-lg p-6 bg-primary-50/50">
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">Report Export</h3>
-              <p className="text-primary-600 text-sm mb-4">Generate comprehensive analysis reports</p>
-              <button 
-                className="px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Coming Soon
-              </button>
-            </div>
-          </div>
-          
           {/* Additional Information */}
-          <div className="mt-8 p-4 bg-accent-50 border border-accent-200 rounded-lg">
+          <div className="p-4 bg-accent-50 border border-accent-200 rounded-lg">
             <h4 className="text-sm font-semibold text-accent-900 mb-2">Export Details</h4>
             <ul className="text-xs text-accent-700 space-y-1">
               <li>• Only includes processed, screened, and approved papers</li>
@@ -265,6 +389,7 @@ const Export: React.FC = () => {
               <li>• Complex JSON fields are flattened with underscore notation</li>
               <li>• Material composition and atom sites are kept as JSON strings</li>
               <li>• Export includes paper metadata (ID, title, authors, publication date)</li>
+              <li>• Each domain generates a separate timestamped CSV file</li>
             </ul>
           </div>
         </div>
