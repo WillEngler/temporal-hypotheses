@@ -39,6 +39,22 @@ const Navbar: React.FC = () => {
             </NavLink>
           </div>
         </div>
+        
+        {/* Export link positioned on the right */}
+        <div className="flex items-center">
+          <NavLink 
+            to="/export" 
+            className={({ isActive }) => 
+              `px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 leading-none flex items-center ${
+                isActive 
+                  ? 'bg-accent-500 text-white shadow-glow' 
+                  : 'bg-primary-800/70 text-primary-100 hover:bg-accent-600/80 hover:text-white'
+              }`
+            }
+          >
+            Export Data
+          </NavLink>
+        </div>
       </div>
     </nav>
   );
