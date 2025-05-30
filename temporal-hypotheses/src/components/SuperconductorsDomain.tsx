@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import superconductorData from './SuperconductorData';
+import supabase from '../services/supabase';
 import CurrentOpenQuestions from './CurrentOpenQuestions';
 
 interface SuperconductorData {
@@ -22,6 +22,31 @@ interface SuperconductorData {
   title: string;
   published_date: string;
 }
+
+// Helper function to flatten JSON similar to the Export component
+const flattenJson = (data: any, prefix: string = '', keepAsJson: string[] = []): Record<string, any> => {
+  const flattened: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    const newKey = prefix ? `${prefix}_${key}` : key;
+    
+    // Check if this field should be kept as JSON
+    if (keepAsJson.includes(newKey) || keepAsJson.includes(key)) {
+      flattened[newKey] = JSON.stringify(value);
+      continue;
+    }
+    
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(flattened, flattenJson(value, newKey, keepAsJson));
+    } else if (Array.isArray(value)) {
+      flattened[newKey] = JSON.stringify(value);
+    } else {
+      flattened[newKey] = value;
+    }
+  }
+  
+  return flattened;
+};
 
 // Helper function to extract year from published_date
 const extractYear = (dateString: string): string => {
@@ -53,6 +78,7 @@ const getTemperatureColor = (temp: number): string => {
 const SuperconductorsDomain: React.FC = () => {
   const [data, setData] = useState<SuperconductorData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Handle dot click to open paper
   const handleDotClick = (data: any) => {
@@ -63,60 +89,153 @@ const SuperconductorsDomain: React.FC = () => {
   };
 
   useEffect(() => {
-    const processData = () => {
-      const processedData = (superconductorData as any[]).map(item => {
-        // Extract oxygen percentage by atoms
-        let oxygenPercentage: number | undefined = undefined;
-        if (item.material_composition) {
-          try {
-            const comp = JSON.parse(item.material_composition);
-            if (comp && typeof comp === 'object' && comp['O']) {
-              // Calculate oxygen percentage by atoms
-              let totalAtoms = 0;
-              for (const element in comp) {
-                totalAtoms += parseFloat(comp[element]);
-              }
-              oxygenPercentage = parseFloat(((parseFloat(comp['O']) / totalAtoms) * 100).toFixed(1));
-            }
-          } catch (e) {
-            // Ignore parse errors
-          }
+    const fetchSuperconductorData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Query papers from superconductors domain that are processed and screened
+        const { data: papers, error: supabaseError } = await supabase
+          .from('papers')
+          .select('paper_id, title, authors, published_date, output, domain, processed, screened, screen_passed')
+          .eq('domain', 'superconductors')
+          .eq('processed', true)
+          .eq('screened', true)
+          .eq('screen_passed', true)
+          .not('output', 'is', null);
+
+        if (supabaseError) {
+          throw supabaseError;
         }
-        return {
-          material_composition: item.material_composition,
-          material_lattice_parameters_a: Number(item.material_lattice_parameters_a),
-          material_lattice_parameters_c: Number(item.material_lattice_parameters_c),
-          properties_critical_temperature: Number(item.properties_critical_temperature),
-          oxygen_percentage: oxygenPercentage,
-          paper_id: item.paper_id,
-          title: item.title,
-          published_date: item.published_date
-        };
-      }).filter(item =>
-        !isNaN(item.properties_critical_temperature) &&
-        item.properties_critical_temperature > 0 &&
-        !isNaN(item.material_lattice_parameters_a) &&
-        !isNaN(item.material_lattice_parameters_c)
-      );
-      setData(processedData);
-      setLoading(false);
+
+        if (!papers || papers.length === 0) {
+          setData([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fields to keep as JSON strings (similar to Export component)
+        const keepAsJson = [
+          'material_composition',
+          'material_atom_sites',
+        ];
+
+        // Process papers and create rows for each material
+        const processedData: SuperconductorData[] = [];
+
+        papers.forEach((paper: any) => {
+          // Basic paper info
+          const paperInfo = {
+            paper_id: paper.paper_id,
+            title: paper.title,
+            authors: paper.authors || '',
+            published_date: paper.published_date || '',
+          };
+
+          // Get materials from output
+          const materials = paper.output?.materials || [];
+          
+          if (Array.isArray(materials) && materials.length > 0) {
+            materials.forEach((material: any) => {
+              // Extract composition and calculate oxygen percentage BEFORE flattening
+              const originalComposition = material.composition;
+              let oxygenPercentage: number | undefined = undefined;
+              if (originalComposition && typeof originalComposition === 'object' && originalComposition['O']) {
+                try {
+                  // Calculate oxygen percentage by atoms
+                  let totalAtoms = 0;
+                  for (const element in originalComposition) {
+                    totalAtoms += parseFloat(originalComposition[element]);
+                  }
+                  oxygenPercentage = parseFloat(((parseFloat(originalComposition['O']) / totalAtoms) * 100).toFixed(1));
+                } catch (e) {
+                  // Ignore parse errors
+                }
+              }
+              
+              // Flatten the material data
+              let flattened: Record<string, any> = {};
+              if (material && typeof material === 'object') {
+                flattened = flattenJson(material, '', keepAsJson);
+              }
+
+              // Create the data row by merging paper info and flattened material data
+              const materialRow: any = { ...paperInfo, ...flattened };
+
+              // Create the final data point
+              const dataPoint: SuperconductorData = {
+                material_composition: originalComposition ? JSON.stringify(originalComposition) : '',
+                material_lattice_parameters_a: Number(materialRow.lattice_parameters_a) || NaN,
+                material_lattice_parameters_c: Number(materialRow.lattice_parameters_c) || NaN,
+                properties_critical_temperature: Number(materialRow.properties_critical_temperature) || NaN,
+                oxygen_percentage: oxygenPercentage,
+                paper_id: materialRow.paper_id,
+                title: materialRow.title,
+                published_date: materialRow.published_date
+              };
+
+              // Include any material that has at least some useful data
+              // Let individual charts filter for their specific needs
+              const hasCriticalTemp = !isNaN(dataPoint.properties_critical_temperature) && dataPoint.properties_critical_temperature > 0;
+              const hasLatticeParams = !isNaN(dataPoint.material_lattice_parameters_a) && !isNaN(dataPoint.material_lattice_parameters_c);
+              const hasComposition = originalComposition && typeof originalComposition === 'object';
+
+              if (hasCriticalTemp || hasLatticeParams || hasComposition) {
+                processedData.push(dataPoint);
+              }
+            });
+          }
+        });
+
+        setData(processedData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching superconductor data:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error occurred');
+        setLoading(false);
+      }
     };
-    processData();
+
+    fetchSuperconductorData();
   }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-lg text-gray-600">Loading superconductor data...</div>
+        <div className="text-lg text-gray-600">Loading superconductor data from database...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg text-red-600">Error loading data: {error}</div>
       </div>
     );
   }
 
   // Filter data for cuprates (materials containing Cu and O)
-  const cuprateData = data.filter(item =>
-    item.material_composition?.includes('Cu') &&
-    item.material_composition?.includes('O') &&
-    item.oxygen_percentage !== undefined
+  const cuprateData = data.filter(item => {
+    try {
+      const comp = JSON.parse(item.material_composition);
+      return comp && 
+             comp['Cu'] && 
+             comp['O'] &&
+             item.oxygen_percentage !== undefined &&
+             !isNaN(item.properties_critical_temperature) &&
+             item.properties_critical_temperature > 0;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  // Filter data for lattice parameter chart (needs both a and c parameters)
+  const latticeData = data.filter(item =>
+    !isNaN(item.material_lattice_parameters_a) &&
+    !isNaN(item.material_lattice_parameters_c) &&
+    !isNaN(item.properties_critical_temperature) &&
+    item.properties_critical_temperature > 0
   );
 
   // Create example temperature ranges for the legend
@@ -135,7 +254,7 @@ const SuperconductorsDomain: React.FC = () => {
                 <span className="text-accent-300 font-medium text-xs tracking-wide uppercase leading-none">Research Analysis</span>
               </div>
               <h1 className="text-xl font-semibold text-white leading-none flex items-baseline">
-                <span className="text-2xl font-bold leading-none">758</span>
+                <span className="text-2xl font-bold leading-none">{data.length}</span>
                 <span className="ml-1">superconductor research papers analyzed</span>
               </h1>
             </div>
@@ -339,13 +458,13 @@ const SuperconductorsDomain: React.FC = () => {
                   />
                   <Scatter
                     name="Materials"
-                    data={data}
+                    data={latticeData}
                     onClick={handleDotClick}
                     cursor="pointer"
                     strokeWidth={1}
                     strokeOpacity={0.8}
                   >
-                    {data.map((entry, index) => (
+                    {latticeData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
                         fill={getTemperatureColor(entry.properties_critical_temperature)}
