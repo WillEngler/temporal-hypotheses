@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import superconductorData from './SuperconductorData';
+import supabase from '../services/supabase';
 import './SuperconductorAnalysis.css';
 
 interface SuperconductorData {
@@ -22,6 +22,31 @@ interface SuperconductorData {
   title: string;
   published_date: string;
 }
+
+// Helper function to flatten JSON similar to the Export component
+const flattenJson = (data: any, prefix: string = '', keepAsJson: string[] = []): Record<string, any> => {
+  const flattened: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    const newKey = prefix ? `${prefix}_${key}` : key;
+    
+    // Check if this field should be kept as JSON
+    if (keepAsJson.includes(newKey) || keepAsJson.includes(key)) {
+      flattened[newKey] = JSON.stringify(value);
+      continue;
+    }
+    
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(flattened, flattenJson(value, newKey, keepAsJson));
+    } else if (Array.isArray(value)) {
+      flattened[newKey] = JSON.stringify(value);
+    } else {
+      flattened[newKey] = value;
+    }
+  }
+  
+  return flattened;
+};
 
 // Color scale function for temperature
 const getTemperatureColor = (temp: number): string => {
@@ -68,6 +93,7 @@ const extractYear = (dateStr: string): string => {
 const SuperconductorAnalysis: React.FC = () => {
   const [data, setData] = useState<SuperconductorData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Handle dot click to open paper
   const handleDotClick = (data: any) => {
@@ -78,49 +104,125 @@ const SuperconductorAnalysis: React.FC = () => {
   };
 
   useEffect(() => {
-    const processData = () => {
-      const processedData = (superconductorData as any[]).map(item => {
-        // Extract oxygen percentage by atoms
-        let oxygenPercentage: number | undefined = undefined;
-        if (item.material_composition) {
-          try {
-            const comp = JSON.parse(item.material_composition);
-            if (comp && typeof comp === 'object' && comp['O']) {
-              // Calculate oxygen percentage by atoms
-              let totalAtoms = 0;
-              for (const element in comp) {
-                totalAtoms += parseFloat(comp[element]);
-              }
-              oxygenPercentage = parseFloat(((parseFloat(comp['O']) / totalAtoms) * 100).toFixed(1));
-            }
-          } catch (e) {
-            // Ignore parse errors
-          }
+    const fetchSuperconductorData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Query papers from superconductors domain that are processed and screened
+        const { data: papers, error: supabaseError } = await supabase
+          .from('papers')
+          .select('paper_id, title, authors, published_date, output, domain, processed, screened, screen_passed')
+          .eq('domain', 'superconductors')
+          .eq('processed', true)
+          .eq('screened', true)
+          .eq('screen_passed', true)
+          .not('output', 'is', null);
+
+        if (supabaseError) {
+          throw supabaseError;
         }
-        return {
-          material_composition: item.material_composition,
-          material_lattice_parameters_a: Number(item.material_lattice_parameters_a),
-          material_lattice_parameters_c: Number(item.material_lattice_parameters_c),
-          properties_critical_temperature: Number(item.properties_critical_temperature),
-          oxygen_percentage: oxygenPercentage,
-          paper_id: item.paper_id,
-          title: item.title,
-          published_date: item.published_date
-        };
-      }).filter(item =>
-        !isNaN(item.properties_critical_temperature) &&
-        item.properties_critical_temperature > 0 &&
-        !isNaN(item.material_lattice_parameters_a) &&
-        !isNaN(item.material_lattice_parameters_c)
-      );
-      setData(processedData);
-      setLoading(false);
+
+        if (!papers || papers.length === 0) {
+          setData([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fields to keep as JSON strings (similar to Export component)
+        const keepAsJson = [
+          'material_composition',
+          'material_atom_sites',
+        ];
+
+        // Process papers and create rows for each material
+        const processedData: SuperconductorData[] = [];
+
+        papers.forEach((paper: any) => {
+          // Basic paper info
+          const paperInfo = {
+            paper_id: paper.paper_id,
+            title: paper.title,
+            authors: paper.authors || '',
+            published_date: paper.published_date || '',
+          };
+
+          // Get materials from output
+          const materials = paper.output?.materials || [];
+          
+          if (Array.isArray(materials) && materials.length > 0) {
+            materials.forEach((material: any) => {
+              // Flatten the material data
+              let flattened: Record<string, any> = {};
+              if (material && typeof material === 'object') {
+                flattened = flattenJson(material, '', keepAsJson);
+              }
+
+              // Create the data row by merging paper info and flattened material data
+              const materialRow: any = { ...paperInfo, ...flattened };
+
+              // Extract oxygen percentage by atoms
+              let oxygenPercentage: number | undefined = undefined;
+              if (materialRow.material_composition) {
+                try {
+                  const comp = typeof materialRow.material_composition === 'string' 
+                    ? JSON.parse(materialRow.material_composition)
+                    : materialRow.material_composition;
+                  
+                  if (comp && typeof comp === 'object' && comp['O']) {
+                    // Calculate oxygen percentage by atoms
+                    let totalAtoms = 0;
+                    for (const element in comp) {
+                      totalAtoms += parseFloat(comp[element]);
+                    }
+                    oxygenPercentage = parseFloat(((parseFloat(comp['O']) / totalAtoms) * 100).toFixed(1));
+                  }
+                } catch (e) {
+                  // Ignore parse errors
+                }
+              }
+
+              // Create the final data point
+              const dataPoint: SuperconductorData = {
+                material_composition: materialRow.material_composition || '',
+                material_lattice_parameters_a: Number(materialRow.material_lattice_parameters_a) || NaN,
+                material_lattice_parameters_c: Number(materialRow.material_lattice_parameters_c) || NaN,
+                properties_critical_temperature: Number(materialRow.properties_critical_temperature) || NaN,
+                oxygen_percentage: oxygenPercentage,
+                paper_id: materialRow.paper_id,
+                title: materialRow.title,
+                published_date: materialRow.published_date
+              };
+
+              // Only include if we have valid critical temperature and lattice parameters
+              if (!isNaN(dataPoint.properties_critical_temperature) &&
+                  dataPoint.properties_critical_temperature > 0 &&
+                  !isNaN(dataPoint.material_lattice_parameters_a) &&
+                  !isNaN(dataPoint.material_lattice_parameters_c)) {
+                processedData.push(dataPoint);
+              }
+            });
+          }
+        });
+
+        setData(processedData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching superconductor data:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error occurred');
+        setLoading(false);
+      }
     };
-    processData();
+
+    fetchSuperconductorData();
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading superconductor data from database...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading data: {error}</div>;
   }
 
   // Filter data for cuprates (materials containing Cu and O)
