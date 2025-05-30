@@ -94,42 +94,6 @@ const SuperconductorsDomain: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // First, let's check total superconductor papers without strict filtering
-        const { data: allPapers, error: countError } = await supabase
-          .from('papers')
-          .select('paper_id')
-          .eq('domain', 'superconductors');
-        
-        console.log('📈 Total superconductor papers in DB:', allPapers?.length || 0);
-
-        // Now check with each filter individually
-        const { data: processedPapers } = await supabase
-          .from('papers')
-          .select('paper_id')
-          .eq('domain', 'superconductors')
-          .eq('processed', true);
-        
-        const { data: screenedPapers } = await supabase
-          .from('papers')
-          .select('paper_id')
-          .eq('domain', 'superconductors')
-          .eq('processed', true)
-          .eq('screened', true);
-          
-        const { data: passedPapers } = await supabase
-          .from('papers')
-          .select('paper_id')
-          .eq('domain', 'superconductors')
-          .eq('processed', true)
-          .eq('screened', true)
-          .eq('screen_passed', true);
-
-        console.log('🔍 Filter analysis:');
-        console.log(`  • Total superconductor papers: ${allPapers?.length || 0}`);
-        console.log(`  • Processed: ${processedPapers?.length || 0}`);
-        console.log(`  • Processed + Screened: ${screenedPapers?.length || 0}`);
-        console.log(`  • Processed + Screened + Passed: ${passedPapers?.length || 0}`);
-
         // Query papers from superconductors domain that are processed and screened
         const { data: papers, error: supabaseError } = await supabase
           .from('papers')
@@ -138,17 +102,13 @@ const SuperconductorsDomain: React.FC = () => {
           .eq('processed', true)
           .eq('screened', true)
           .eq('screen_passed', true)
-          .not('output', 'is', null)
-          .limit(2000); // Explicitly set a high limit to avoid pagination issues
-
-        console.log('🔍 Debug: Raw papers from Supabase:', papers?.length || 0);
+          .not('output', 'is', null);
 
         if (supabaseError) {
           throw supabaseError;
         }
 
         if (!papers || papers.length === 0) {
-          console.log('❌ No papers found');
           setData([]);
           setLoading(false);
           return;
@@ -162,10 +122,6 @@ const SuperconductorsDomain: React.FC = () => {
 
         // Process papers and create rows for each material
         const processedData: SuperconductorData[] = [];
-        let totalMaterialsFound = 0;
-        let validMaterialsCount = 0;
-        let papersWithMaterials = 0;
-        let papersWithoutMaterials = 0;
 
         papers.forEach((paper: any) => {
           // Basic paper info
@@ -180,20 +136,7 @@ const SuperconductorsDomain: React.FC = () => {
           const materials = paper.output?.materials || [];
           
           if (Array.isArray(materials) && materials.length > 0) {
-            papersWithMaterials++;
-            totalMaterialsFound += materials.length;
-            
-            materials.forEach((material: any, materialIndex: number) => {
-              // Debug: Log first few materials to see their structure
-              if (papersWithMaterials <= 2 && materialIndex === 0) {
-                console.log(`🔍 Raw material ${papersWithMaterials}-${materialIndex}:`, {
-                  chemical_formula: material.chemical_formula,
-                  composition: material.composition,
-                  lattice_parameters: material.lattice_parameters,
-                  properties: material.properties
-                });
-              }
-              
+            materials.forEach((material: any) => {
               // Extract composition and calculate oxygen percentage BEFORE flattening
               const originalComposition = material.composition;
               let oxygenPercentage: number | undefined = undefined;
@@ -236,35 +179,13 @@ const SuperconductorsDomain: React.FC = () => {
               const hasCriticalTemp = !isNaN(dataPoint.properties_critical_temperature) && dataPoint.properties_critical_temperature > 0;
               const hasLatticeParams = !isNaN(dataPoint.material_lattice_parameters_a) && !isNaN(dataPoint.material_lattice_parameters_c);
               const hasComposition = originalComposition && typeof originalComposition === 'object';
-              
+
               if (hasCriticalTemp || hasLatticeParams || hasComposition) {
                 processedData.push(dataPoint);
-                validMaterialsCount++;
               }
             });
-          } else {
-            papersWithoutMaterials++;
           }
         });
-
-        console.log('📊 Debug Stats:');
-        console.log(`  • Papers from DB: ${papers.length}`);
-        console.log(`  • Papers with materials: ${papersWithMaterials}`);
-        console.log(`  • Papers without materials: ${papersWithoutMaterials}`);
-        console.log(`  • Total materials found: ${totalMaterialsFound}`);
-        console.log(`  • Valid materials (with Tc + lattice): ${validMaterialsCount}`);
-        console.log(`  • Final data points: ${processedData.length}`);
-
-        // Sample a few papers to check their structure
-        if (papers.length > 0) {
-          console.log('🔍 Sample paper structure:', {
-            paper_id: papers[0].paper_id,
-            has_output: !!papers[0].output,
-            output_keys: papers[0].output ? Object.keys(papers[0].output) : [],
-            materials_count: papers[0].output?.materials?.length || 0,
-            first_material_keys: papers[0].output?.materials?.[0] ? Object.keys(papers[0].output.materials[0]) : []
-          });
-        }
 
         setData(processedData);
         setLoading(false);
@@ -309,22 +230,6 @@ const SuperconductorsDomain: React.FC = () => {
     }
   });
 
-  // Let's also try a more relaxed cuprate filter for comparison
-  const cuprateDataRelaxed = data.filter(item => {
-    try {
-      const comp = JSON.parse(item.material_composition);
-      return comp && 
-             comp['Cu'] && 
-             comp['O'] &&
-             !isNaN(item.properties_critical_temperature) &&
-             item.properties_critical_temperature > 0;
-    } catch (e) {
-      return false;
-    }
-  });
-
-  console.log(`🔍 Cuprate comparison - Strict: ${cuprateData.length}, Relaxed (no oxygen% req): ${cuprateDataRelaxed.length}`);
-
   // Filter data for lattice parameter chart (needs both a and c parameters)
   const latticeData = data.filter(item =>
     !isNaN(item.material_lattice_parameters_a) &&
@@ -332,73 +237,6 @@ const SuperconductorsDomain: React.FC = () => {
     !isNaN(item.properties_critical_temperature) &&
     item.properties_critical_temperature > 0
   );
-
-  // Let's debug the lattice filtering step by step
-  const latticeDebug = {
-    hasLatticeA: data.filter(item => !isNaN(item.material_lattice_parameters_a)).length,
-    hasLatticeAAndC: data.filter(item => 
-      !isNaN(item.material_lattice_parameters_a) && 
-      !isNaN(item.material_lattice_parameters_c)
-    ).length,
-    hasValidTc: data.filter(item => 
-      !isNaN(item.material_lattice_parameters_a) && 
-      !isNaN(item.material_lattice_parameters_c) &&
-      !isNaN(item.properties_critical_temperature) &&
-      item.properties_critical_temperature > 0
-    ).length
-  };
-
-  console.log('🔍 Lattice Filter Debug:');
-  console.log(`  • Materials with lattice_a: ${latticeDebug.hasLatticeA}`);
-  console.log(`  • Materials with lattice_a + lattice_c: ${latticeDebug.hasLatticeAAndC}`);
-  console.log(`  • Materials with lattice_a + lattice_c + Tc: ${latticeDebug.hasValidTc}`);
-
-  // Let's also check some Cu-containing materials specifically
-  const cuMaterials = data.filter(item => {
-    try {
-      if (!item.material_composition || item.material_composition === '') {
-        return false;
-      }
-      const comp = JSON.parse(item.material_composition);
-      return comp && comp['Cu'];
-    } catch (e) { return false; }
-  });
-
-  console.log('🔍 Cu-containing materials sample:');
-  console.log(`Found ${cuMaterials.length} Cu materials out of ${data.length} total`);
-  
-  // Also check for materials that might have Cu in chemical formula instead
-  const cuFormulaMatels = data.filter(item => {
-    return item.material_composition && item.material_composition.toLowerCase().includes('cu');
-  });
-  
-  console.log(`Materials with 'cu' in composition string: ${cuFormulaMatels.length}`);
-  
-  cuMaterials.slice(0, 3).forEach((item, i) => {
-    console.log(`Cu Material ${i + 1}:`, {
-      composition: item.material_composition,
-      oxygen_percentage: item.oxygen_percentage,
-      critical_temp: item.properties_critical_temperature,
-      has_valid_tc: !isNaN(item.properties_critical_temperature) && item.properties_critical_temperature > 0
-    });
-  });
-
-  // Sample some data to see what's available
-  console.log('🔍 Sample materials for debugging:');
-  data.slice(0, 5).forEach((item, i) => {
-    console.log(`Material ${i + 1}:`, {
-      composition: item.material_composition,
-      oxygen_percentage: item.oxygen_percentage,
-      lattice_a: item.material_lattice_parameters_a,
-      lattice_c: item.material_lattice_parameters_c,
-      critical_temp: item.properties_critical_temperature
-    });
-  });
-
-  console.log('📊 Chart Data Counts:');
-  console.log(`  • Total processed materials: ${data.length}`);
-  console.log(`  • Cuprate chart data points: ${cuprateData.length}`);
-  console.log(`  • Lattice chart data points: ${latticeData.length}`);
 
   // Create example temperature ranges for the legend
   const tempRanges = [0, 30, 60, 90, 120, 150];
